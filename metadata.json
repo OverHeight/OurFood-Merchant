@@ -1,0 +1,6 @@
+{
+  "name": "Merchant Hub",
+  "description": "Dashboard merchant restoran & delivery makanan dengan manajemen pesanan, grafik pendapatan, dan riwayat transaksi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
