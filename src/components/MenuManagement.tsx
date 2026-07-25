@@ -17,8 +17,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
   const categories = ['Semua', 'Makanan Utama', 'Minuman', 'Cemilan'];
 
   const filteredItems = menuItems.filter((item) => {
-    const matchesCategory = selectedCategory === 'Semua' || item.category === selectedCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === 'Semua' || item.kategori === selectedCategory;
+    const matchesSearch = item.nama_menu.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -72,59 +72,59 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredItems.map((item) => (
           <div
-            key={item.id}
+            key={item.menu_id}
             className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between hover:border-emerald-300 transition-all group"
           >
             <div>
               <div className="relative h-40 w-full rounded-xl overflow-hidden bg-slate-100 mb-3">
                 <img
                   src={item.image}
-                  alt={item.name}
+                  alt={item.nama_menu}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="absolute top-2 left-2 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold rounded-lg flex items-center gap-1">
-                  <Tag className="w-3 h-3 text-emerald-400" /> {item.category}
+                  <Tag className="w-3 h-3 text-emerald-400" /> {item.kategori}
                 </span>
 
                 <span
                   className={`absolute top-2 right-2 px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-xs ${
-                    item.available
+                    item.status_tersedia
                       ? 'bg-emerald-500/90 text-white'
                       : 'bg-rose-500/90 text-white'
                   }`}
                 >
-                  {item.available ? 'Tersedia' : 'Stok Habis'}
+                  {item.status_tersedia ? 'Tersedia' : 'Stok Habis'}
                 </span>
               </div>
 
               <div className="flex justify-between items-start mb-1">
-                <h3 className="text-base font-bold text-slate-900">{item.name}</h3>
+                <h3 className="text-base font-bold text-slate-900">{item.nama_menu}</h3>
                 <span className="text-sm font-extrabold text-[#006e2f]">
-                  Rp {new Intl.NumberFormat('id-ID').format(item.price)}
+                  Rp {new Intl.NumberFormat('id-ID').format(item.harga)}
                 </span>
               </div>
 
               <p className="text-xs text-slate-500 line-clamp-2 mb-3">
-                {item.description}
+                {item.deskripsi}
               </p>
             </div>
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Terjual {item.salesCount}x</span>
+                <span>Terjual {item.salesCount || 0}x</span>
               </div>
 
               {/* Stock Switcher Button */}
               <button
-                onClick={() => onToggleStock(item.id)}
+                onClick={() => onToggleStock(String(item.menu_id))}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  item.available
+                  item.status_tersedia
                     ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
                     : 'bg-emerald-50 text-[#006e2f] hover:bg-emerald-100 border border-emerald-200'
                 }`}
               >
-                {item.available ? (
+                {item.status_tersedia ? (
                   <>
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Set Habis</span>

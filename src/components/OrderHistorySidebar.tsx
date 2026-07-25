@@ -118,21 +118,21 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
         <div className="flex-grow p-4 space-y-3 overflow-y-auto max-h-[600px]">
           {historyOrders.map((order) => (
             <div
-              key={order.id}
+              key={order.order_id}
               onClick={() => onSelectOrder(order)}
               className="p-3.5 hover:bg-slate-50/80 transition-all rounded-xl border border-slate-200/60 group cursor-pointer hover:border-emerald-300 shadow-2xs"
             >
               <div className="flex justify-between items-center mb-1">
                 <span className="text-xs font-bold text-slate-700">Order Id</span>
-                <span className="text-xs text-slate-400 font-medium">{order.time}</span>
+                <span className="text-xs text-slate-400 font-medium">{order.waktu_checkout}</span>
               </div>
 
               <p className="text-sm font-bold text-[#006e2f] mb-2.5">
-                {order.id}
+                {order.order_id}
               </p>
 
               <div className="flex items-center gap-1.5 flex-wrap">
-                {getStatusBadge(order.status)}
+                {getStatusBadge(order.status_order)}
                 {getPaymentBadge(order.paymentStatus)}
               </div>
             </div>

@@ -19,7 +19,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     window.print();
   };
 
-  const formattedPrice = new Intl.NumberFormat('id-ID').format(order.totalPrice);
+  const formattedPrice = new Intl.NumberFormat('id-ID').format(order.total_harga);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -29,7 +29,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#006e2f]" />
             <h3 className="text-base font-bold text-slate-900">
-              Detail Pesanan <span className="text-[#006e2f]">{order.id}</span>
+              Detail Pesanan <span className="text-[#006e2f]">{order.order_id}</span>
             </h3>
           </div>
           <button
@@ -46,17 +46,17 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
             <div className="flex justify-between items-center pb-2 border-b border-slate-200/80">
               <span className="text-slate-500 font-medium">Pelanggan</span>
-              <span className="font-bold text-slate-900">{order.customerName}</span>
+              <span className="font-bold text-slate-900">{order.nama}</span>
             </div>
-            {order.customerPhone && (
+            {order.no_hp && (
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-medium">No. Telepon</span>
-                <span className="font-semibold text-slate-800">{order.customerPhone}</span>
+                <span className="font-semibold text-slate-800">{order.no_hp}</span>
               </div>
             )}
             <div className="flex justify-between items-center">
               <span className="text-slate-500 font-medium">Waktu Pemesanan</span>
-              <span className="font-semibold text-slate-800">{order.time} WIB</span>
+              <span className="font-semibold text-slate-800">{order.waktu_checkout} WIB</span>
             </div>
             {order.deliveryType && (
               <div className="flex justify-between items-center">
@@ -66,11 +66,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 </span>
               </div>
             )}
-            {order.address && (
+            {order.alamat_pengantaran && (
               <div className="flex justify-between items-start pt-1">
                 <span className="text-slate-500 font-medium">Alamat</span>
                 <span className="font-medium text-slate-800 text-right max-w-[200px]">
-                  {order.address}
+                  {order.alamat_pengantaran}
                 </span>
               </div>
             )}
@@ -84,7 +84,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div key={idx} className="p-3 bg-white flex justify-between items-start">
                   <div>
                     <p className="text-xs font-bold text-slate-900">
-                      {item.name} <span className="text-[#006e2f]">x{item.quantity}</span>
+                      {item.nama_menu} <span className="text-[#006e2f]">x{item.jumlah}</span>
                     </p>
                     {item.notes && (
                       <p className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1 inline-block border border-amber-200">
@@ -93,7 +93,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     )}
                   </div>
                   <p className="text-xs font-bold text-slate-800">
-                    Rp {new Intl.NumberFormat('id-ID').format(item.price * item.quantity)}
+                    Rp {new Intl.NumberFormat('id-ID').format(item.harga_saat_itu * item.jumlah)}
                   </p>
                 </div>
               ))}
@@ -118,9 +118,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             <p className="text-xs font-bold text-slate-700 uppercase">Ubah Status Pesanan</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
-                onClick={() => onUpdateStatus(order.id, 'SEDANG_DIMASAK')}
+                onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status === 'SEDANG_DIMASAK'
+                  order.status_order === 'SEDANG_DIMASAK'
                     ? 'bg-amber-500 text-white border-amber-500'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -129,9 +129,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </button>
 
               <button
-                onClick={() => onUpdateStatus(order.id, 'SIAP_DIANTAR')}
+                onClick={() => onUpdateStatus(String(order.order_id), 'SIAP_DIANTAR')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status === 'SIAP_DIANTAR'
+                  order.status_order === 'SIAP_DIANTAR'
                     ? 'bg-[#006e2f] text-white border-[#006e2f]'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -140,9 +140,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </button>
 
               <button
-                onClick={() => onUpdateStatus(order.id, 'SELESAI')}
+                onClick={() => onUpdateStatus(String(order.order_id), 'SELESAI')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status === 'SELESAI'
+                  order.status_order === 'SELESAI'
                     ? 'bg-emerald-600 text-white border-emerald-600'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
@@ -151,9 +151,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </button>
 
               <button
-                onClick={() => onUpdateStatus(order.id, 'BATAL')}
+                onClick={() => onUpdateStatus(String(order.order_id), 'BATAL')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status === 'BATAL'
+                  order.status_order === 'BATAL'
                     ? 'bg-rose-600 text-white border-rose-600'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}

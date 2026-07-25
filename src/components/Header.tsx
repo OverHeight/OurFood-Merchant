@@ -39,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="text-lg md:text-xl font-bold text-[#006e2f] tracking-tight">
-            Food Delivery
+            OurFood
           </span>
           <span className="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
             Merchant
@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 ring-2 ring-emerald-600/30">
             <img
               src={merchantProfile.avatarUrl}
-              alt={merchantProfile.name}
+              alt={merchantProfile.nama_merchant}
               className="w-full h-full object-cover"
             />
           </div>

@@ -18,23 +18,23 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase());
+      String(order.order_id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.nama?.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (filterTab === 'aktif') {
       return (
         matchesSearch &&
-        (order.status === 'DISIAPKAN' ||
-          order.status === 'SEDANG_DIMASAK' ||
-          order.status === 'SIAP_DIANTAR' ||
-          order.status === 'DIANTAR')
+        (order.status_order === 'DISIAPKAN' ||
+          order.status_order === 'SEDANG_DIMASAK' ||
+          order.status_order === 'SIAP_DIANTAR' ||
+          order.status_order === 'DIANTAR')
       );
     }
     if (filterTab === 'selesai') {
-      return matchesSearch && order.status === 'SELESAI';
+      return matchesSearch && order.status_order === 'SELESAI';
     }
     if (filterTab === 'batal') {
-      return matchesSearch && order.status === 'BATAL';
+      return matchesSearch && order.status_order === 'BATAL';
     }
     return matchesSearch;
   });
@@ -150,27 +150,27 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
               ) : (
                 filteredOrders.map((order) => {
                   const itemsSummary = order.items
-                    .map((i) => `${i.name} (${i.quantity}x)`)
+                    .map((i) => `${i.nama_menu} (${i.jumlah}x)`)
                     .join(', ');
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={order.order_id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4 font-bold text-[#006e2f]">
-                        {order.id}
+                        {order.order_id}
                         <span className="block text-[10px] text-slate-400 font-normal">
-                          {order.time}
+                          {order.waktu_checkout}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900">
-                        {order.customerName}
+                        {order.nama}
                       </td>
                       <td className="py-3.5 px-4 text-slate-600 max-w-xs truncate">
                         {itemsSummary}
                       </td>
                       <td className="py-3.5 px-4 font-extrabold text-slate-900">
-                        Rp {new Intl.NumberFormat('id-ID').format(order.totalPrice)}
+                        Rp {new Intl.NumberFormat('id-ID').format(order.total_harga)}
                       </td>
-                      <td className="py-3.5 px-4">{getStatusBadge(order.status)}</td>
+                      <td className="py-3.5 px-4">{getStatusBadge(order.status_order)}</td>
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => onSelectOrder(order)}

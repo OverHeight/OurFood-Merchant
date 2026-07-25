@@ -30,12 +30,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center gap-4">
           <img
             src={formData.avatarUrl}
-            alt={formData.name}
+            alt={formData.nama_merchant}
             className="w-16 h-16 rounded-full object-cover ring-4 ring-emerald-500/20"
           />
           <div>
-            <h2 className="text-xl font-bold text-slate-900">{formData.name}</h2>
-            <p className="text-xs text-slate-500 font-medium">{formData.address}</p>
+            <h2 className="text-xl font-bold text-slate-900">{formData.nama_merchant}</h2>
+            <p className="text-xs text-slate-500 font-medium">{formData.alamat}</p>
             <div className="flex items-center gap-2 mt-2">
               <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" /> {formData.rating}
@@ -82,46 +82,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </label>
               <input
                 type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={formData.nama_merchant}
+                onChange={(e) => setFormData({ ...formData, nama_merchant: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Nama Pemilik / Penanggung Jawab
-              </label>
-              <input
-                type="text"
-                value={formData.ownerName}
-                onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                 No. HP / WhatsApp Merchant
               </label>
               <input
                 type="text"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Jam Operasional
-              </label>
-              <input
-                type="text"
-                value={formData.operatingHours}
-                onChange={(e) => setFormData({ ...formData, operatingHours: e.target.value })}
+                value={formData.no_hp}
+                onChange={(e) => setFormData({ ...formData, no_hp: e.target.value })}
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
               />
             </div>
@@ -133,8 +107,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </label>
             <input
               type="text"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              value={formData.alamat}
+              onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
             />
           </div>

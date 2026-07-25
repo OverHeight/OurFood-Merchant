@@ -25,18 +25,18 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
   const [selectedCart, setSelectedCart] = useState<{ item: MenuItem; quantity: number; notes: string }[]>([]);
 
   const handleToggleCartItem = (menu: MenuItem) => {
-    const existing = selectedCart.find((c) => c.item.id === menu.id);
+    const existing = selectedCart.find((c) => c.item.menu_id === menu.menu_id);
     if (existing) {
-      setSelectedCart(selectedCart.filter((c) => c.item.id !== menu.id));
+      setSelectedCart(selectedCart.filter((c) => c.item.menu_id !== menu.menu_id));
     } else {
       setSelectedCart([...selectedCart, { item: menu, quantity: 1, notes: '' }]);
     }
   };
 
-  const handleQuantityChange = (menuId: string, delta: number) => {
+  const handleQuantityChange = (menuId: string | number, delta: number) => {
     setSelectedCart(
       selectedCart.map((c) => {
-        if (c.item.id === menuId) {
+        if (c.item.menu_id === menuId) {
           const newQty = Math.max(1, c.quantity + delta);
           return { ...c, quantity: newQty };
         }
@@ -45,13 +45,13 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
     );
   };
 
-  const handleNotesChange = (menuId: string, notes: string) => {
+  const handleNotesChange = (menuId: string | number, notes: string) => {
     setSelectedCart(
-      selectedCart.map((c) => (c.item.id === menuId ? { ...c, notes } : c))
+      selectedCart.map((c) => (c.item.menu_id === menuId ? { ...c, notes } : c))
     );
   };
 
-  const totalPrice = selectedCart.reduce((sum, c) => sum + c.item.price * c.quantity, 0);
+  const totalPrice = selectedCart.reduce((sum, c) => sum + c.item.harga * c.quantity, 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,23 +61,24 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
     const newOrder: Order = {
-      id: `#ORD-${Math.floor(100000000 + Math.random() * 900000000)}`,
-      customerName: customerName.trim(),
-      customerPhone: customerPhone.trim() || undefined,
+      order_id: `#ORD-${Math.floor(100000000 + Math.random() * 900000000)}`,
+      nama: customerName.trim(),
+      no_hp: customerPhone.trim() || undefined,
       items: selectedCart.map((c) => ({
-        id: c.item.id,
-        name: c.item.name,
-        quantity: c.quantity,
-        price: c.item.price,
+        order_item_id: `item-${Date.now()}-${Math.random()}`,
+        menu_id: c.item.menu_id,
+        nama_menu: c.item.nama_menu,
+        jumlah: c.quantity,
+        harga_saat_itu: c.item.harga,
+        subtotal: c.item.harga * c.quantity,
         notes: c.notes || undefined,
       })),
-      totalPrice,
-      status: 'DISIAPKAN',
+      total_harga: totalPrice,
+      status_order: 'DISIAPKAN',
       paymentStatus,
-      time: timeStr,
-      createdAt: now.toISOString(),
+      waktu_checkout: now.toISOString(),
       deliveryType,
-      address: address.trim() || undefined,
+      alamat_pengantaran: address.trim() || undefined,
     };
 
     onAddOrder(newOrder);
@@ -145,55 +146,21 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
             </div>
           </div>
 
-          {/* Delivery & Payment Options */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Tipe Layanan
-              </label>
-              <select
-                value={deliveryType}
-                onChange={(e: any) => setDeliveryType(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
-              >
-                <option value="Takeaway">Bawa Pulang (Takeaway)</option>
-                <option value="Delivery">Pesan Antar (Delivery)</option>
-                <option value="Dine-In">Makan di Tempat (Dine-In)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Status Pembayaran
-              </label>
-              <select
-                value={paymentStatus}
-                onChange={(e: any) => setPaymentStatus(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
-              >
-                <option value="SUDAH_BAYAR">Sudah Bayar (Lunas)</option>
-                <option value="BELUM_BAYAR">Belum Bayar (Cash/Unpaid)</option>
-              </select>
-            </div>
+          {/* Payment Options */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              Status Pembayaran
+            </label>
+            <select
+              value={paymentStatus}
+              onChange={(e: any) => setPaymentStatus(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+            >
+              <option value="SUDAH_BAYAR">Sudah Bayar (Lunas)</option>
+              <option value="BELUM_BAYAR">Belum Bayar (Cash/Unpaid)</option>
+            </select>
           </div>
 
-          {deliveryType === 'Delivery' && (
-            <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                Alamat Pengiriman
-              </label>
-              <div className="relative">
-                <MapPin className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Jl. Merdeka No. 10..."
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
-                />
-              </div>
-            </div>
-          )}
 
           {/* Menu Selection */}
           <div>
@@ -202,11 +169,11 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
               {menuItems.map((m) => {
-                const isSelected = selectedCart.some((c) => c.item.id === m.id);
+                const isSelected = selectedCart.some((c) => c.item.menu_id === m.menu_id);
                 return (
                   <button
                     type="button"
-                    key={m.id}
+                    key={m.menu_id}
                     onClick={() => handleToggleCartItem(m)}
                     className={`p-2.5 rounded-xl text-left border transition-all flex items-center gap-2.5
                       ${
@@ -218,13 +185,13 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   >
                     <img
                       src={m.image}
-                      alt={m.name}
+                      alt={m.nama_menu}
                       className="w-9 h-9 rounded-lg object-cover shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate">{m.name}</p>
+                      <p className="text-xs font-bold truncate">{m.nama_menu}</p>
                       <p className="text-[11px] text-slate-500">
-                        Rp {new Intl.NumberFormat('id-ID').format(m.price)}
+                        Rp {new Intl.NumberFormat('id-ID').format(m.harga)}
                       </p>
                     </div>
                   </button>
@@ -240,13 +207,13 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 Item Dipilih ({selectedCart.length})
               </label>
               {selectedCart.map((c) => (
-                <div key={c.item.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+                <div key={c.item.menu_id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">{c.item.name}</span>
+                    <span className="text-xs font-bold text-slate-800">{c.item.nama_menu}</span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => handleQuantityChange(c.item.id, -1)}
+                        onClick={() => handleQuantityChange(c.item.menu_id, -1)}
                         className="p-1 bg-white border border-slate-200 rounded-lg hover:bg-slate-100"
                       >
                         <Minus className="w-3.5 h-3.5" />
@@ -256,7 +223,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                       </span>
                       <button
                         type="button"
-                        onClick={() => handleQuantityChange(c.item.id, 1)}
+                        onClick={() => handleQuantityChange(c.item.menu_id, 1)}
                         className="p-1 bg-white border border-slate-200 rounded-lg hover:bg-slate-100"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -267,7 +234,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     type="text"
                     placeholder="Catatan kustom (misal: pedas, es sedikit)"
                     value={c.notes}
-                    onChange={(e) => handleNotesChange(c.item.id, e.target.value)}
+                    onChange={(e) => handleNotesChange(c.item.menu_id, e.target.value)}
                     className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-white"
                   />
                 </div>

@@ -73,13 +73,13 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
         ) : (
           orders.map((order) => {
             const summaryTitle = order.items
-              .map((i) => `${i.name} (${i.quantity}x)`)
+              .map((i) => `${i.nama_menu} (${i.jumlah}x)`)
               .join(', ');
-            const formattedPrice = new Intl.NumberFormat('id-ID').format(order.totalPrice);
+            const formattedPrice = new Intl.NumberFormat('id-ID').format(order.total_harga);
 
             return (
               <div
-                key={order.id}
+                key={order.order_id}
                 className="group p-4 bg-[#f8f9ff] rounded-xl border border-slate-200/80 hover:border-emerald-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
               >
                 {/* Left side info */}
@@ -97,11 +97,11 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                         {summaryTitle}
                       </p>
                       <span className="text-[10px] font-semibold text-slate-400">
-                        {order.time}
+                        {order.waktu_checkout}
                       </span>
                     </div>
                     <p className="text-xs text-slate-500 font-medium mt-0.5">
-                      Pesanan oleh: <span className="text-slate-800 font-semibold">{order.customerName}</span> • {order.id}
+                      Pesanan oleh: <span className="text-slate-800 font-semibold">{order.nama}</span> • {order.order_id}
                     </p>
                   </div>
                 </div>
@@ -112,32 +112,32 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                     <p className="text-sm font-bold text-slate-900">
                       Rp. {formattedPrice}
                     </p>
-                    <div className="mt-0.5">{getStatusBadge(order.status)}</div>
+                    <div className="mt-0.5">{getStatusBadge(order.status_order)}</div>
                   </div>
 
                   {/* Quick Action buttons */}
                   <div className="flex items-center gap-1">
-                    {order.status === 'DISIAPKAN' && (
+                    {order.status_order === 'DISIAPKAN' && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, 'SEDANG_DIMASAK')}
+                        onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
                         className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                         title="Proses Masak"
                       >
                         Masak
                       </button>
                     )}
-                    {order.status === 'SEDANG_DIMASAK' && (
+                    {order.status_order === 'SEDANG_DIMASAK' && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, 'SIAP_DIANTAR')}
+                        onClick={() => onUpdateStatus(String(order.order_id), 'SIAP_DIANTAR')}
                         className="px-2.5 py-1.5 bg-[#006e2f] hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                         title="Tandai Siap Diantar"
                       >
                         Siap
                       </button>
                     )}
-                    {order.status === 'SIAP_DIANTAR' && (
+                    {order.status_order === 'SIAP_DIANTAR' && (
                       <button
-                        onClick={() => onUpdateStatus(order.id, 'SELESAI')}
+                        onClick={() => onUpdateStatus(String(order.order_id), 'SELESAI')}
                         className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                         title="Tandai Selesai"
                       >

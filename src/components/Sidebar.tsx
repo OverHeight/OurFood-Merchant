@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {(!isCollapsedDesktop || isOpenMobile) && (
                 <div className="flex flex-col truncate">
                   <span className="font-bold text-slate-900 leading-tight text-base truncate">
-                    Food Delivery
+                    OurFood
                   </span>
                   <span className="text-xs text-slate-500 font-medium">Merchant Hub</span>
                 </div>
@@ -216,16 +216,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-3 p-1.5 rounded-xl">
             <img
               src={merchantProfile.avatarUrl}
-              alt={merchantProfile.name}
+              alt={merchantProfile.nama_merchant}
               className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-600/30 shrink-0"
             />
             {(!isCollapsedDesktop || isOpenMobile) && (
               <div className="flex flex-col truncate">
                 <span className="text-xs font-bold text-slate-800 truncate">
-                  {merchantProfile.name}
+                  {merchantProfile.nama_merchant}
                 </span>
                 <span className="text-[11px] text-slate-500 truncate">
-                  {merchantProfile.ownerName}
+                  {merchantProfile.no_hp}
                 </span>
               </div>
             )}
