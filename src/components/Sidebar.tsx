@@ -1,18 +1,18 @@
-import React from 'react';
-import { NavTab, MerchantProfile } from '../types';
+import React, { useState } from 'react';
+import { NavTab, MerchantProfile, StoreStatus } from '../types';
 import {
   LayoutDashboard,
   UtensilsCrossed,
   ClipboardList,
   BarChart3,
-  User,
   Store,
   ChevronLeft,
   ChevronRight,
   X,
   PlusCircle,
-  Bell,
-  Power
+  Power,
+  MapPin,
+  Star,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +27,24 @@ interface SidebarProps {
   onToggleCollapseDesktop: () => void;
 }
 
+const STORE_STATUS_CONFIG: Record<StoreStatus, { label: string; color: string; dotColor: string }> = {
+  BUKA: {
+    label: 'Toko Buka',
+    color: 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100',
+    dotColor: 'bg-emerald-500',
+  },
+  TUTUP: {
+    label: 'Toko Tutup',
+    color: 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100',
+    dotColor: 'bg-rose-500',
+  },
+  TIDAK_MENERIMA: {
+    label: 'Tidak Menerima Order',
+    color: 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100',
+    dotColor: 'bg-amber-500',
+  },
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   currentTab,
   onSelectTab,
@@ -38,33 +56,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsedDesktop,
   onToggleCollapseDesktop,
 }) => {
-  const navItems: { id: NavTab; label: string; icon: React.ReactNode; badge?: string }[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: <LayoutDashboard className="w-5 h-5" />,
-      badge: 'Aktif',
-    },
-    {
-      id: 'orders',
-      label: 'Semua Pesanan',
-      icon: <ClipboardList className="w-5 h-5" />,
-    },
-    {
-      id: 'menu',
-      label: 'Menu & Produk',
-      icon: <UtensilsCrossed className="w-5 h-5" />,
-    },
-    {
-      id: 'reports',
-      label: 'Laporan Pendapatan',
-      icon: <BarChart3 className="w-5 h-5" />,
-    },
-    {
-      id: 'profile',
-      label: 'Profil Restoran',
-      icon: <User className="w-5 h-5" />,
-    },
+  const statusConfig = STORE_STATUS_CONFIG[merchantProfile.storeStatus];
+
+  const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'orders', label: 'Semua Pesanan', icon: <ClipboardList className="w-5 h-5" /> },
+    { id: 'menu', label: 'Menu & Produk', icon: <UtensilsCrossed className="w-5 h-5" /> },
+    { id: 'reviews', label: 'Ulasan', icon: <Star className="w-5 h-5" /> },
+    { id: 'reports', label: 'Laporan', icon: <BarChart3 className="w-5 h-5" /> },
+    { id: 'maps', label: 'Tracking Maps', icon: <MapPin className="w-5 h-5" /> },
   ];
 
   const handleNavClick = (tab: NavTab) => {
@@ -82,7 +82,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         />
       )}
 
-      {/* Sidebar Container - Shared for desktop and mobile drawer */}
+      {/* Sidebar Container */}
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-white border-r border-slate-200 shadow-xl lg:shadow-none flex flex-col justify-between transition-all duration-300 ease-in-out
           ${isOpenMobile ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
@@ -124,24 +124,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
           </div>
 
-          {/* Quick Store Status Switcher */}
+          {/* 3-State Store Status */}
           <div className="p-3 border-b border-slate-100 bg-slate-50/50">
             <button
               onClick={onToggleStoreStatus}
-              className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-all text-xs font-semibold
-                ${
-                  merchantProfile.isOpen
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
-                    : 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100'
-                }
-              `}
+              className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-all text-xs font-semibold ${statusConfig.color}`}
+              title="Klik untuk ganti status toko"
             >
               <div className="flex items-center gap-2 overflow-hidden">
-                <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${merchantProfile.isOpen ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${statusConfig.dotColor}`} />
                 {(!isCollapsedDesktop || isOpenMobile) && (
-                  <span className="truncate">
-                    Status: {merchantProfile.isOpen ? 'Toko Buka' : 'Toko Tutup'}
-                  </span>
+                  <span className="truncate">{statusConfig.label}</span>
                 )}
               </div>
               {(!isCollapsedDesktop || isOpenMobile) && (
@@ -175,30 +168,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative
-                    ${
-                      isActive
-                        ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-xs'
-                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ${isActive
+                      ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }
                   `}
                   title={item.label}
                 >
-                  <div
-                    className={`${
-                      isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'
-                    }`}
-                  >
+                  <div className={`${isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
                     {item.icon}
                   </div>
 
                   {(!isCollapsedDesktop || isOpenMobile) && (
                     <span className="truncate flex-1 text-left">{item.label}</span>
-                  )}
-
-                  {item.badge && (!isCollapsedDesktop || isOpenMobile) && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                      {item.badge}
-                    </span>
                   )}
 
                   {/* Active Indicator Bar on collapsed desktop */}
@@ -211,16 +193,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* Footer Info / User Profile Summary */}
+        {/* Footer — Avatar clickable → goes to Profile */}
         <div className="p-3 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center gap-3 p-1.5 rounded-xl">
+          <button
+            onClick={() => handleNavClick('profile')}
+            className="w-full flex items-center gap-3 p-1.5 rounded-xl hover:bg-slate-100 transition-colors group"
+            title="Lihat Profil"
+          >
             <img
               src={merchantProfile.avatarUrl}
               alt={merchantProfile.nama_merchant}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-600/30 shrink-0"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-600/30 shrink-0 group-hover:ring-emerald-500 transition-all"
             />
             {(!isCollapsedDesktop || isOpenMobile) && (
-              <div className="flex flex-col truncate">
+              <div className="flex flex-col truncate text-left">
                 <span className="text-xs font-bold text-slate-800 truncate">
                   {merchantProfile.nama_merchant}
                 </span>
@@ -229,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               </div>
             )}
-          </div>
+          </button>
         </div>
       </aside>
     </>

@@ -8,8 +8,10 @@ export type OrderStatus =
 
 export type PaymentStatus = 'SUDAH_BAYAR' | 'BELUM_BAYAR' | 'REFUNDED';
 
+export type StoreStatus = 'BUKA' | 'TUTUP' | 'TIDAK_MENERIMA';
+
 export interface OrderItem {
-  order_item_id: number | string; // Use string or number depending on how it's generated, fallback to string for compatibility with existing random ID generation
+  order_item_id: number | string;
   menu_id: number | string;
   jumlah: number;
   harga_saat_itu: number;
@@ -34,6 +36,7 @@ export interface Order {
   paymentStatus: PaymentStatus;
   deliveryType?: 'Takeaway' | 'Delivery' | 'Dine-In';
   items: OrderItem[];
+  cancelReason?: string;
 }
 
 export interface MenuItem {
@@ -42,6 +45,7 @@ export interface MenuItem {
   nama_menu: string;
   harga: number;
   status_tersedia: boolean;
+  stok: number;
   // UI additions
   category: 'Makanan Utama' | 'Minuman' | 'Cemilan' | 'Paket Hemat';
   description: string;
@@ -57,7 +61,7 @@ export interface MerchantProfile {
   alamat: string;
   no_hp: string;
   // UI additions
-  isOpen: boolean;
+  storeStatus: StoreStatus;
   avatarUrl: string;
   rating: number;
   totalOrdersThisMonth: number;
@@ -69,4 +73,27 @@ export interface RevenueDataPoint {
   orderCount: number;
 }
 
-export type NavTab = 'dashboard' | 'menu' | 'orders' | 'reports' | 'profile';
+export interface Review {
+  review_id: string;
+  order_id: string;
+  nama_pelanggan: string;
+  avatar_url?: string;
+  rating: number; // 1-5
+  komentar: string;
+  nama_menu: string;
+  waktu: string;
+  dibalas?: boolean;
+}
+
+export interface DriverRequest {
+  request_id: string;
+  order_id: string;
+  nama_driver: string;
+  avatar_url: string;
+  rating_driver: number;
+  nomor_kendaraan: string;
+  jarak_km: number;
+  expires_at: number; // timestamp ms
+}
+
+export type NavTab = 'dashboard' | 'menu' | 'orders' | 'reports' | 'profile' | 'maps' | 'reviews';

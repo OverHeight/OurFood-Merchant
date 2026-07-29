@@ -1,11 +1,12 @@
 import React from 'react';
 import { Order, OrderStatus } from '../types';
-import { Utensils, Coffee, Soup, BarChart2, ChevronRight, CheckCircle2, Clock, Truck, Play } from 'lucide-react';
+import { Utensils, Coffee, Soup, BarChart2, ChevronRight, CheckCircle2, Clock, Truck, Play, XCircle } from 'lucide-react';
 
 interface ActiveOrdersCardProps {
   orders: Order[];
   onSelectOrder: (order: Order) => void;
   onUpdateStatus: (orderId: string, newStatus: OrderStatus) => void;
+  onCancelOrder: (orderId: string) => void;
   onViewAll: () => void;
 }
 
@@ -13,6 +14,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
   orders,
   onSelectOrder,
   onUpdateStatus,
+  onCancelOrder,
   onViewAll,
 }) => {
   const getOrderIcon = (itemNames: string) => {
@@ -80,14 +82,22 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
             return (
               <div
                 key={order.order_id}
-                className="group p-4 bg-[#f8f9ff] rounded-xl border border-slate-200/80 hover:border-emerald-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
+                className={`group p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
+                  order.status_order === 'DISIAPKAN'
+                    ? 'bg-blue-50/60 border-blue-200 hover:border-blue-300'
+                    : 'bg-[#f8f9ff] border-slate-200/80 hover:border-emerald-300'
+                }`}
               >
                 {/* Left side info */}
                 <div
                   onClick={() => onSelectOrder(order)}
                   className="flex items-center gap-3.5 flex-1 cursor-pointer"
                 >
-                  <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0 border border-emerald-100">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+                    order.status_order === 'DISIAPKAN'
+                      ? 'bg-blue-100 border-blue-200'
+                      : 'bg-emerald-50 border-emerald-100'
+                  }`}>
                     {getOrderIcon(summaryTitle)}
                   </div>
 
@@ -118,13 +128,22 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                   {/* Quick Action buttons */}
                   <div className="flex items-center gap-1">
                     {order.status_order === 'DISIAPKAN' && (
-                      <button
-                        onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
-                        className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
-                        title="Proses Masak"
-                      >
-                        Masak
-                      </button>
+                      <>
+                        <button
+                          onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
+                          title="Terima & Proses Masak"
+                        >
+                          Terima
+                        </button>
+                        <button
+                          onClick={() => onCancelOrder(String(order.order_id))}
+                          className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition-all"
+                          title="Tolak Pesanan"
+                        >
+                          Tolak
+                        </button>
+                      </>
                     )}
                     {order.status_order === 'SEDANG_DIMASAK' && (
                       <button
@@ -151,7 +170,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
           })
         )}
 
-        {/* Atmospheric Placeholder Footer matching HTML */}
+        {/* Atmospheric Placeholder Footer */}
         <div className="mt-2 pt-4 border-t border-slate-100 flex items-center justify-center text-slate-400 opacity-60">
           <div className="text-center flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { MerchantProfile } from '../types';
-import { User, Store, Phone, Mail, MapPin, Clock, Star, Save, Power, CheckCircle } from 'lucide-react';
+import { MerchantProfile, StoreStatus } from '../types';
+import { Store, Save, Power, CheckCircle } from 'lucide-react';
 
 interface ProfileViewProps {
   merchantProfile: MerchantProfile;
@@ -36,28 +36,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div>
             <h2 className="text-xl font-bold text-slate-900">{formData.nama_merchant}</h2>
             <p className="text-xs text-slate-500 font-medium">{formData.alamat}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" /> {formData.rating}
-              </span>
-              <span className="text-xs text-slate-500">
-                • {formData.totalOrdersThisMonth} pesanan bulan ini
-              </span>
-            </div>
           </div>
         </div>
 
-        <button
-          onClick={onToggleStoreStatus}
-          className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-            formData.isOpen
-              ? 'bg-emerald-50 text-[#006e2f] border border-emerald-300 hover:bg-emerald-100'
-              : 'bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100'
-          }`}
-        >
-          <Power className="w-4 h-4" />
-          <span>Status: {formData.isOpen ? 'Toko Buka' : 'Toko Tutup'}</span>
-        </button>
       </div>
 
       {/* Form Card */}

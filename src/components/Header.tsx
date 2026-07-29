@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
-import { NavTab, MerchantProfile } from '../types';
-import { Menu, Bell, Store, CheckCircle, RefreshCw, ChevronDown } from 'lucide-react';
+import { NavTab, MerchantProfile, StoreStatus } from '../types';
+import { Menu, Bell } from 'lucide-react';
+
+const STORE_STATUS_CHIP: Record<StoreStatus, { label: string; cls: string; dot: string }> = {
+  BUKA: { label: 'Buka', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
+  TUTUP: { label: 'Tutup', cls: 'bg-rose-50 text-rose-800 border-rose-200', dot: 'bg-rose-500' },
+  TIDAK_MENERIMA: { label: 'Tidak Menerima', cls: 'bg-amber-50 text-amber-800 border-amber-200', dot: 'bg-amber-500' },
+};
 
 interface HeaderProps {
   currentTab: NavTab;
@@ -51,43 +57,45 @@ export const Header: React.FC<HeaderProps> = ({
       <nav className="hidden md:flex items-center gap-6">
         <button
           onClick={() => onSelectTab('dashboard')}
-          className={`text-sm font-semibold transition-all py-1 ${
-            currentTab === 'dashboard'
+          className={`text-sm font-semibold transition-all py-1 ${currentTab === 'dashboard'
               ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
               : 'text-slate-600 hover:text-[#006e2f]'
-          }`}
+            }`}
         >
           Order / Dashboard
         </button>
         <button
           onClick={() => onSelectTab('menu')}
-          className={`text-sm font-semibold transition-all py-1 ${
-            currentTab === 'menu'
+          className={`text-sm font-semibold transition-all py-1 ${currentTab === 'menu'
               ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
               : 'text-slate-600 hover:text-[#006e2f]'
-          }`}
+            }`}
         >
           Menu
         </button>
         <button
-          onClick={() => onSelectTab('profile')}
-          className={`text-sm font-semibold transition-all py-1 ${
-            currentTab === 'profile'
+          onClick={() => onSelectTab('reviews')}
+          className={`text-sm font-semibold transition-all py-1 ${currentTab === 'reviews'
               ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
               : 'text-slate-600 hover:text-[#006e2f]'
-          }`}
+            }`}
         >
-          Profile
+          Ulasan
         </button>
       </nav>
 
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
-        {/* Store Status Chip */}
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          <span>Buka</span>
-        </div>
+        {/* Store Status Chip — Dynamic 3-state */}
+        {(() => {
+          const chip = STORE_STATUS_CHIP[merchantProfile.storeStatus];
+          return (
+            <div className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${chip.cls}`}>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${chip.dot}`} />
+              <span>{chip.label}</span>
+            </div>
+          );
+        })()}
 
         {/* Notifications Popover Toggle */}
         <div className="relative">
@@ -124,20 +132,6 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Avatar Profile Trigger */}
-        <button
-          onClick={() => onSelectTab('profile')}
-          className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-100 transition-all border border-slate-200/80"
-          title="Ke Profil Restoran"
-        >
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 ring-2 ring-emerald-600/30">
-            <img
-              src={merchantProfile.avatarUrl}
-              alt={merchantProfile.nama_merchant}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </button>
       </div>
     </header>
   );

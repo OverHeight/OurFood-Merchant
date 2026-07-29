@@ -1,11 +1,11 @@
-import { Order, MenuItem, RevenueDataPoint, MerchantProfile } from '../types';
+import { Order, MenuItem, RevenueDataPoint, MerchantProfile, Review, DriverRequest } from '../types';
 
 export const INITIAL_MERCHANT_PROFILE: MerchantProfile = {
   merchant_id: 1,
   nama_merchant: 'Dapur Nusantara & Kopi',
   no_hp: '+62 812-3456-7890',
   alamat: 'Jl. Senopati No. 42, Kebayoran Baru, Jakarta Selatan',
-  isOpen: true,
+  storeStatus: 'BUKA',
   avatarUrl:
     'https://lh3.googleusercontent.com/aida-public/AB6AXuAj9WbQg0HB6BPpIStLD-8MZ4V03WN1fvsfH7sWqZaWUC4FqSqJ2d0F867CAfXvTQ3rz-diikuwYOJ8mxYcNzcCABomjy9Jk1Q7o-EURO-DP6al-im9WgWOLOv4q-JE36VMXt44uvMu0YCG8UcwgJ7OXjGhZXkJG_Qf3xA_sDgod-Hljxw2CHkd65KAz99QImIw2uOVPb91wcW_tGltosPSsF0KksnCByLaQKzAmByRkYwzxGJ1Ay1p',
   rating: 4.8,
@@ -133,6 +133,7 @@ export const INITIAL_ORDER_HISTORY: Order[] = [
     status_order: 'BATAL',
     paymentStatus: 'REFUNDED',
     waktu_checkout: '2026-07-24T09:15:00',
+    cancelReason: 'Bahan habis',
   },
   {
     order_id: '#ORD-129385123',
@@ -176,6 +177,26 @@ export const LAST_WEEK_REVENUE: RevenueDataPoint[] = [
   { day: 'Min', amount: 460000, orderCount: 17 },
 ];
 
+export const THIS_MONTH_REVENUE: RevenueDataPoint[] = [
+  { day: 'Mg 1', amount: 1850000, orderCount: 68 },
+  { day: 'Mg 2', amount: 2340000, orderCount: 89 },
+  { day: 'Mg 3', amount: 2100000, orderCount: 79 },
+  { day: 'Mg 4', amount: 3010000, orderCount: 111 },
+];
+
+export const TODAY_REVENUE: RevenueDataPoint[] = [
+  { day: '08:00', amount: 45000, orderCount: 2 },
+  { day: '09:00', amount: 78000, orderCount: 3 },
+  { day: '10:00', amount: 120000, orderCount: 5 },
+  { day: '11:00', amount: 215000, orderCount: 8 },
+  { day: '12:00', amount: 380000, orderCount: 14 },
+  { day: '13:00', amount: 290000, orderCount: 11 },
+  { day: '14:00', amount: 155000, orderCount: 6 },
+  { day: '15:00', amount: 110000, orderCount: 4 },
+  { day: '16:00', amount: 95000, orderCount: 3 },
+  { day: '17:00', amount: 140000, orderCount: 5 },
+];
+
 export const INITIAL_MENU_ITEMS: MenuItem[] = [
   {
     menu_id: 'm1',
@@ -185,6 +206,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Ayam bakar lembut disiram madu murni dan bumbu rempah pilihan, disajikan dengan lalapan.',
     image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
+    stok: 15,
     salesCount: 142,
   },
   {
@@ -195,6 +217,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Espresso racikan khas dipadu dengan susu segar dan gula aren asli Tuban.',
     image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
+    stok: 3,
     salesCount: 210,
   },
   {
@@ -205,6 +228,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Nasi goreng dengan potongan ayam, udang, telur ceplok, kerupuk, dan acar segar.',
     image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
+    stok: 20,
     salesCount: 98,
   },
   {
@@ -215,6 +239,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Ayam crispy digeprek dengan sambal matah khas Bali yang segar dan harum serai.',
     image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
+    stok: 5,
     salesCount: 165,
   },
   {
@@ -225,6 +250,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Sate daging ayam pilihan dibakar dengan kecap manis dan saus kacang gurih melimpah.',
     image: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=400&q=80',
     status_tersedia: false,
+    stok: 0,
     salesCount: 88,
   },
   {
@@ -235,6 +261,89 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     description: 'Pisang raja goreng crispy ditaburi keju parut melimpah dan susu kental manis cokelat.',
     image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
+    stok: 12,
     salesCount: 74,
+  },
+];
+
+export const INITIAL_REVIEWS: Review[] = [
+  {
+    review_id: 'rv1',
+    order_id: '#ORD-129384756',
+    nama_pelanggan: 'Rian Febrian',
+    avatar_url: 'https://i.pravatar.cc/150?img=3',
+    rating: 5,
+    komentar: 'Ayam gepreknya enak banget! Sambal matahnya segar, porsinya juga pas. Pasti order lagi!',
+    nama_menu: 'Ayam Geprek Sambal Matah',
+    waktu: '2026-07-24T13:10:00',
+    dibalas: true,
+  },
+  {
+    review_id: 'rv2',
+    order_id: '#ORD-129385123',
+    nama_pelanggan: 'Maya Indah',
+    avatar_url: 'https://i.pravatar.cc/150?img=5',
+    rating: 4,
+    komentar: 'Pisang goreng kejunya renyah dan cheesy banget. Tapi pengiriman agak lama, bintang 4 dulu ya.',
+    nama_menu: 'Pisang Goreng Keju Cokelat',
+    waktu: '2026-07-23T19:05:00',
+    dibalas: false,
+  },
+  {
+    review_id: 'rv3',
+    order_id: '#ORD-129384812',
+    nama_pelanggan: 'Anisa Rahma',
+    avatar_url: 'https://i.pravatar.cc/150?img=9',
+    rating: 5,
+    komentar: 'Sate ayam Maduranya mantap! Bumbunya meresap sempurna. Worth it banget harganya.',
+    nama_menu: 'Sate Ayam Madura',
+    waktu: '2026-07-24T12:00:00',
+    dibalas: true,
+  },
+  {
+    review_id: 'rv4',
+    order_id: '#ORD-129385001',
+    nama_pelanggan: 'Bagas Pratama',
+    avatar_url: 'https://i.pravatar.cc/150?img=12',
+    rating: 3,
+    komentar: 'Nasi gorengnya lumayan, tapi kurang pedas padahal sudah minta pedas extra. Semoga bisa lebih diperhatikan.',
+    nama_menu: 'Nasi Goreng Spesial',
+    waktu: '2026-07-23T20:30:00',
+    dibalas: false,
+  },
+  {
+    review_id: 'rv5',
+    order_id: '#ORD-129385124',
+    nama_pelanggan: 'Fikri Haikal',
+    avatar_url: 'https://i.pravatar.cc/150?img=7',
+    rating: 5,
+    komentar: 'Kopi susu pandannya unik dan enak banget! Aroma pandannya kuat tapi tidak berlebihan. Top markotop!',
+    nama_menu: 'Kopi Susu Pandan',
+    waktu: '2026-07-23T17:00:00',
+    dibalas: true,
+  },
+  {
+    review_id: 'rv6',
+    order_id: '#ORD-129385050',
+    nama_pelanggan: 'Sari Dewi',
+    avatar_url: 'https://i.pravatar.cc/150?img=16',
+    rating: 4,
+    komentar: 'Ayam bakar madunya lezat, manisnya pas. Cuma agak lama masaknya tapi worth the wait!',
+    nama_menu: 'Ayam Bakar Madu',
+    waktu: '2026-07-22T18:45:00',
+    dibalas: false,
+  },
+];
+
+export const MOCK_DRIVER_REQUESTS: DriverRequest[] = [
+  {
+    request_id: 'dr1',
+    order_id: '#ORD-129385202',
+    nama_driver: 'Agus Supriyadi',
+    avatar_url: 'https://i.pravatar.cc/150?img=33',
+    rating_driver: 4.9,
+    nomor_kendaraan: 'B 2345 XYZ',
+    jarak_km: 1.2,
+    expires_at: Date.now() + 30000,
   },
 ];

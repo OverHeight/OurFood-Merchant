@@ -18,7 +18,7 @@ export const StatCardsRow: React.FC<StatCardsRowProps> = ({
   const formattedRevenue = new Intl.NumberFormat('id-ID').format(totalRevenue);
 
   return (
-    <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {/* Today's Order */}
       <div className="bg-white p-5 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-slate-200/60 flex flex-col justify-between hover:border-emerald-300 transition-all">
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -60,14 +60,14 @@ export const StatCardsRow: React.FC<StatCardsRowProps> = ({
       </div>
 
       {/* Revenue */}
-      <div className="bg-white p-5 rounded-xl shadow-[0px_4px_12px_rgba(0,0,0,0.05)] border border-slate-200/60 flex flex-col justify-between hover:border-emerald-300 transition-all col-span-2 md:col-span-1">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Pendapatan
+      <div className="bg-gradient-to-br from-[#006e2f] to-emerald-700 p-6 rounded-2xl shadow-lg border border-emerald-800/60 flex flex-col justify-between transition-all col-span-2 md:col-span-4 text-white">
+        <span className="text-sm font-semibold text-emerald-100 uppercase tracking-wider">
+          Total Pendapatan
         </span>
-        <div className="mt-2 flex items-baseline gap-1">
-          <span className="text-base font-bold text-[#006e2f]">Rp.</span>
-          <span className="text-2xl font-extrabold text-[#006e2f] tracking-tight">
-            {formattedRevenue},-
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="text-2xl font-bold text-emerald-200">Rp</span>
+          <span className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            {formattedRevenue}
           </span>
         </div>
       </div>

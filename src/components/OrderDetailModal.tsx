@@ -6,12 +6,14 @@ interface OrderDetailModalProps {
   order: Order | null;
   onClose: () => void;
   onUpdateStatus: (orderId: string, newStatus: OrderStatus) => void;
+  onCancelOrder: (orderId: string) => void;
 }
 
 export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   order,
   onClose,
   onUpdateStatus,
+  onCancelOrder,
 }) => {
   if (!order) return null;
 
@@ -113,6 +115,14 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             </span>
           </div>
 
+          {/* Cancel Reason (if cancelled) */}
+          {order.status_order === 'BATAL' && order.cancelReason && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
+              <p className="text-xs font-bold text-rose-700 mb-1">Alasan Pembatalan:</p>
+              <p className="text-xs text-rose-600">{order.cancelReason}</p>
+            </div>
+          )}
+
           {/* Quick Status Control */}
           <div className="space-y-2 pt-2 border-t border-slate-100">
             <p className="text-xs font-bold text-slate-700 uppercase">Ubah Status Pesanan</p>
@@ -151,11 +161,12 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </button>
 
               <button
-                onClick={() => onUpdateStatus(String(order.order_id), 'BATAL')}
+                onClick={() => onCancelOrder(String(order.order_id))}
+                disabled={order.status_order === 'BATAL' || order.status_order === 'SELESAI'}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
                   order.status_order === 'BATAL'
                     ? 'bg-rose-600 text-white border-rose-600'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    : 'bg-slate-50 text-rose-700 border-rose-200 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed'
                 }`}
               >
                 Batalkan

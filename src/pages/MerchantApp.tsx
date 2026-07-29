@@ -4,10 +4,12 @@ import {
   OrderStatus,
   MenuItem,
   MerchantProfile,
+  StoreStatus,
 } from '../types';
 import {
   INITIAL_MERCHANT_PROFILE,
   INITIAL_MENU_ITEMS,
+  INITIAL_REVIEWS,
 } from '../data/mockData';
 import { Header } from '../components/Header';
 import { Sidebar } from '../components/Sidebar';
@@ -20,17 +22,34 @@ import { OrderDetailModal } from '../components/OrderDetailModal';
 import { MenuManagement } from '../components/MenuManagement';
 import { OrdersListView } from '../components/OrdersListView';
 import { ProfileView } from '../components/ProfileView';
+import { ReviewsView } from '../components/ReviewsView';
+import { MapsView } from '../components/MapsView';
+import { CancelOrderModal } from '../components/CancelOrderModal';
+import { DriverRequestModal } from '../components/DriverRequestModal';
+import { AddMenuModal } from '../components/AddMenuModal';
+import { UpdateStockModal } from '../components/UpdateStockModal';
 import { Plus } from 'lucide-react';
 import { useOrders } from '../hooks/useOrders';
+import { useDriverRequests } from '../hooks/useDriverRequests';
+
+// Cycle through 3 store statuses
+const NEXT_STATUS: Record<StoreStatus, StoreStatus> = {
+  BUKA: 'TIDAK_MENERIMA',
+  TIDAK_MENERIMA: 'TUTUP',
+  TUTUP: 'BUKA',
+};
 
 export default function MerchantApp() {
   const [currentTab, setCurrentTab] = useState<NavTab>('dashboard');
   const [merchantProfile, setMerchantProfile] = useState<MerchantProfile>(
     INITIAL_MERCHANT_PROFILE
   );
-  
+
   const { activeOrders, setActiveOrders, historyOrders, setHistoryOrders, addOrder } = useOrders();
   const [menuItems, setMenuItems] = useState<MenuItem[]>(INITIAL_MENU_ITEMS);
+
+  // Driver requests
+  const { currentRequest, acceptRequest, rejectRequest, dismissRequest } = useDriverRequests();
 
   // Layout & Modals
   const [isOpenMobileSidebar, setIsOpenMobileSidebar] = useState(false);
@@ -38,13 +57,20 @@ export default function MerchantApp() {
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
 
+  // Cancel Order Modal
+  const [cancelModalOrderId, setCancelModalOrderId] = useState<string | null>(null);
+
+  // Add Menu Modal
+  const [isAddMenuModalOpen, setIsAddMenuModalOpen] = useState(false);
+
+  // Update Stock Modal
+  const [selectedMenuItemForStock, setSelectedMenuItemForStock] = useState<MenuItem | null>(null);
+
   // Status Handlers
   const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    // Check in active orders
     const foundActive = activeOrders.find((o) => String(o.order_id) === orderId);
     if (foundActive) {
       if (newStatus === 'SELESAI' || newStatus === 'BATAL') {
-        // Move from active to history
         setActiveOrders(activeOrders.filter((o) => String(o.order_id) !== orderId));
         setHistoryOrders([{ ...foundActive, status_order: newStatus }, ...historyOrders]);
       } else {
@@ -53,15 +79,36 @@ export default function MerchantApp() {
         );
       }
     } else {
-      // Check in history
       setHistoryOrders(
         historyOrders.map((o) => (String(o.order_id) === orderId ? { ...o, status_order: newStatus } : o))
       );
     }
-
     if (selectedOrder && String(selectedOrder.order_id) === orderId) {
       setSelectedOrder({ ...selectedOrder, status_order: newStatus });
     }
+  };
+
+  const handleCancelOrderRequest = (orderId: string) => {
+    // Close detail modal first, open cancel modal
+    setCancelModalOrderId(orderId);
+    setSelectedOrder(null);
+  };
+
+  const handleCancelOrderConfirm = (orderId: string, reason: string) => {
+    const foundActive = activeOrders.find((o) => String(o.order_id) === orderId);
+    if (foundActive) {
+      setActiveOrders(activeOrders.filter((o) => String(o.order_id) !== orderId));
+      setHistoryOrders([{ ...foundActive, status_order: 'BATAL', cancelReason: reason, paymentStatus: 'REFUNDED' }, ...historyOrders]);
+    } else {
+      setHistoryOrders(
+        historyOrders.map((o) =>
+          String(o.order_id) === orderId
+            ? { ...o, status_order: 'BATAL', cancelReason: reason, paymentStatus: 'REFUNDED' }
+            : o
+        )
+      );
+    }
+    setCancelModalOrderId(null);
   };
 
   const handleToggleStock = (menuId: string | number) => {
@@ -70,11 +117,32 @@ export default function MerchantApp() {
     );
   };
 
-  const handleToggleStoreStatus = () => {
-    setMerchantProfile((prev) => ({ ...prev, isOpen: !prev.isOpen }));
+  const handleAddMenu = (newItem: Omit<MenuItem, 'menu_id' | 'salesCount'>) => {
+    const newId = menuItems.length + 1;
+    const added: MenuItem = {
+      ...newItem,
+      menu_id: newId,
+      salesCount: 0,
+    };
+    setMenuItems([...menuItems, added]);
   };
 
-  // Compute exact metrics matching screenshot or dynamic
+  const handleUpdateStock = (menuId: string | number, newStock: number) => {
+    setMenuItems(
+      menuItems.map((m) =>
+        m.menu_id === menuId
+          ? { ...m, stok: newStock, status_tersedia: newStock > 0 }
+          : m
+      )
+    );
+  };
+
+  // Cycle through 3 store statuses
+  const handleToggleStoreStatus = () => {
+    setMerchantProfile((prev) => ({ ...prev, storeStatus: NEXT_STATUS[prev.storeStatus] }));
+  };
+
+  // Metrics
   const todayCount = activeOrders.length + historyOrders.filter(h => h.status_order === 'SELESAI').length;
   const completedCount = historyOrders.filter(h => h.status_order === 'SELESAI').length;
   const inProgressCount = activeOrders.length;
@@ -133,11 +201,10 @@ export default function MerchantApp() {
                   orders={activeOrders}
                   onSelectOrder={setSelectedOrder}
                   onUpdateStatus={handleUpdateOrderStatus}
+                  onCancelOrder={handleCancelOrderRequest}
                   onViewAll={() => setCurrentTab('orders')}
                 />
 
-                {/* Revenue Chart Card */}
-                <RevenueChart />
               </div>
 
               {/* Right Order History Sidebar (30%) */}
@@ -161,11 +228,31 @@ export default function MerchantApp() {
             <MenuManagement
               menuItems={menuItems}
               onToggleStock={handleToggleStock}
+              onOpenAddMenu={() => setIsAddMenuModalOpen(true)}
+              onOpenUpdateStock={(item) => setSelectedMenuItemForStock(item)}
             />
+          )}
+
+          {currentTab === 'reviews' && (
+            <ReviewsView reviews={INITIAL_REVIEWS} />
           )}
 
           {currentTab === 'reports' && (
             <div className="space-y-6">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[
+                  { label: 'Total Pendapatan', value: `Rp ${new Intl.NumberFormat('id-ID').format(totalRevenue)}`, color: 'text-emerald-700' },
+                  { label: 'Order Selesai', value: completedCount, color: 'text-blue-700' },
+                  { label: 'Order Dibatalkan', value: cancelledCount, color: 'text-rose-700' },
+                  { label: 'Rata-rata / Order', value: completedCount > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(Math.floor(totalRevenue / completedCount))}` : '-', color: 'text-violet-700' },
+                ].map((item) => (
+                  <div key={item.label} className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
+                    <p className="text-xs text-slate-500 font-medium">{item.label}</p>
+                    <p className={`text-lg font-extrabold mt-1 ${item.color}`}>{item.value}</p>
+                  </div>
+                ))}
+              </div>
               <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
                 <h2 className="text-xl font-bold text-slate-900 mb-2">
                   Laporan Analitik Pendapatan
@@ -178,6 +265,10 @@ export default function MerchantApp() {
             </div>
           )}
 
+          {currentTab === 'maps' && (
+            <MapsView merchantProfile={merchantProfile} activeOrders={activeOrders} />
+          )}
+
           {currentTab === 'profile' && (
             <ProfileView
               merchantProfile={merchantProfile}
@@ -188,27 +279,58 @@ export default function MerchantApp() {
         </main>
       </div>
 
-      {/* Floating Action Button (FAB) matching HTML design */}
-      <button
-        onClick={() => setIsNewOrderModalOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-[#006e2f] text-white rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40 group"
-        title="Buat Pesanan Baru"
-      >
-        <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform" />
-      </button>
-
       {/* Modals */}
       <NewOrderModal
         isOpen={isNewOrderModalOpen}
         onClose={() => setIsNewOrderModalOpen(false)}
         menuItems={menuItems}
-        onAddOrder={addOrder}
+        onAddOrder={(newOrder) => {
+          addOrder(newOrder);
+          setMenuItems((prev) =>
+            prev.map((m) => {
+              const orderedItem = newOrder.items.find((i) => String(i.menu_id) === String(m.menu_id));
+              if (orderedItem) {
+                const newStok = Math.max(0, m.stok - orderedItem.jumlah);
+                return { ...m, stok: newStok, status_tersedia: newStok > 0 };
+              }
+              return m;
+            })
+          );
+        }}
       />
 
       <OrderDetailModal
         order={selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onUpdateStatus={handleUpdateOrderStatus}
+        onCancelOrder={handleCancelOrderRequest}
+      />
+
+      <CancelOrderModal
+        orderId={cancelModalOrderId || ''}
+        isOpen={!!cancelModalOrderId}
+        onClose={() => setCancelModalOrderId(null)}
+        onConfirm={handleCancelOrderConfirm}
+      />
+
+      <DriverRequestModal
+        request={currentRequest}
+        onAccept={(id) => { acceptRequest(id); }}
+        onReject={(id) => { rejectRequest(id); }}
+        onClose={() => currentRequest && dismissRequest(currentRequest.request_id)}
+      />
+
+      <AddMenuModal
+        isOpen={isAddMenuModalOpen}
+        onClose={() => setIsAddMenuModalOpen(false)}
+        onAdd={handleAddMenu}
+      />
+
+      <UpdateStockModal
+        isOpen={!!selectedMenuItemForStock}
+        onClose={() => setSelectedMenuItemForStock(null)}
+        menuItem={selectedMenuItemForStock}
+        onUpdate={handleUpdateStock}
       />
     </div>
   );

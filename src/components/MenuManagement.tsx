@@ -5,11 +5,15 @@ import { UtensilsCrossed, Plus, Search, CheckCircle, XCircle, Tag, TrendingUp } 
 interface MenuManagementProps {
   menuItems: MenuItem[];
   onToggleStock: (menuId: string) => void;
+  onOpenAddMenu: () => void;
+  onOpenUpdateStock: (item: MenuItem) => void;
 }
 
 export const MenuManagement: React.FC<MenuManagementProps> = ({
   menuItems,
   onToggleStock,
+  onOpenAddMenu,
+  onOpenUpdateStock,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,8 +40,15 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
           </p>
         </div>
 
-        {/* Category Pills & Search */}
+        {/* Category Pills, Search & Add Menu */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button
+            onClick={onOpenAddMenu}
+            className="px-4 py-2 bg-[#006e2f] hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Menu</span>
+          </button>
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
             <input
@@ -104,6 +115,24 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                 </span>
               </div>
 
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-slate-500">Stok: {item.stok}</span>
+                  <button
+                    onClick={() => onOpenUpdateStock(item)}
+                    className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+                    title="Edit Stok"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </button>
+                </div>
+                {item.stok > 0 && item.stok <= 5 && (
+                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    Hampir Habis
+                  </span>
+                )}
+              </div>
+
               <p className="text-xs text-slate-500 line-clamp-2 mb-3">
                 {item.deskripsi}
               </p>
@@ -118,10 +147,13 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
               {/* Stock Switcher Button */}
               <button
                 onClick={() => onToggleStock(String(item.menu_id))}
+                disabled={item.stok === 0}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  item.status_tersedia
-                    ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                    : 'bg-emerald-50 text-[#006e2f] hover:bg-emerald-100 border border-emerald-200'
+                  item.stok === 0
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                    : item.status_tersedia
+                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
+                      : 'bg-emerald-50 text-[#006e2f] hover:bg-emerald-100 border border-emerald-200'
                 }`}
               >
                 {item.status_tersedia ? (
