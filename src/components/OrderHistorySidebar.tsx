@@ -67,7 +67,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
     switch (status) {
       case 'SUDAH_BAYAR':
         return (
-          <span className="px-2 py-0.5 bg-emerald-100 text-[#006e2f] rounded text-[10px] font-bold uppercase tracking-wider">
+          <span className="px-2 py-0.5 bg-emerald-100 text-[#BD4444] rounded text-[10px] font-bold uppercase tracking-wider">
             Sudah Bayar
           </span>
         );
@@ -93,7 +93,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
         <div className="p-5 border-b border-slate-100 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <History className="w-5 h-5 text-[#006e2f]" />
+              <History className="w-5 h-5 text-[#BD4444]" />
               <h3 className="text-base font-bold text-slate-900">
                 Riwayat Pesanan
               </h3>
@@ -106,7 +106,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
           <button
             onClick={handleRefresh}
             className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${
-              isRefreshing ? 'animate-spin text-[#006e2f]' : ''
+              isRefreshing ? 'animate-spin text-[#BD4444]' : ''
             }`}
             title="Perbarui Data"
           >
@@ -127,7 +127,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
                 <span className="text-xs text-slate-400 font-medium">{order.waktu_checkout}</span>
               </div>
 
-              <p className="text-sm font-bold text-[#006e2f] mb-2.5">
+              <p className="text-sm font-bold text-[#BD4444] mb-2.5">
                 {order.order_id}
               </p>
 
@@ -143,7 +143,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
         <div className="p-4 border-t border-slate-100">
           <button
             onClick={onViewAllHistory}
-            className="w-full py-3 bg-slate-50 text-[#006e2f] text-xs font-bold rounded-xl border border-emerald-200 hover:bg-emerald-50 transition-all flex items-center justify-center gap-1.5"
+            className="w-full py-3 bg-slate-50 text-[#BD4444] text-xs font-bold rounded-xl border border-[#e0ceb5] hover:bg-[#F1DEC4] transition-all flex items-center justify-center gap-1.5"
           >
             <span>Tampilkan Lebih Banyak</span>
             <ChevronRight className="w-4 h-4" />

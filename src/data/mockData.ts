@@ -1,7 +1,7 @@
 import { Order, MenuItem, RevenueDataPoint, MerchantProfile, Review, DriverRequest } from '../types';
 
 export const INITIAL_MERCHANT_PROFILE: MerchantProfile = {
-  merchant_id: 1,
+  merchant_id: '1',
   nama_merchant: 'Dapur Nusantara & Kopi',
   no_hp: '+62 812-3456-7890',
   alamat: 'Jl. Senopati No. 42, Kebayoran Baru, Jakarta Selatan',
@@ -204,7 +204,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Makanan Utama',
     harga: 22500,
     description: 'Ayam bakar lembut disiram madu murni dan bumbu rempah pilihan, disajikan dengan lalapan.',
-    image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
     stok: 15,
     salesCount: 142,
@@ -215,7 +215,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Minuman',
     harga: 12000,
     description: 'Espresso racikan khas dipadu dengan susu segar dan gula aren asli Tuban.',
-    image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
     stok: 3,
     salesCount: 210,
@@ -226,7 +226,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Makanan Utama',
     harga: 28000,
     description: 'Nasi goreng dengan potongan ayam, udang, telur ceplok, kerupuk, dan acar segar.',
-    image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
     stok: 20,
     salesCount: 98,
@@ -237,7 +237,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Makanan Utama',
     harga: 25000,
     description: 'Ayam crispy digeprek dengan sambal matah khas Bali yang segar dan harum serai.',
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
     stok: 5,
     salesCount: 165,
@@ -248,7 +248,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Makanan Utama',
     harga: 30000,
     description: 'Sate daging ayam pilihan dibakar dengan kecap manis dan saus kacang gurih melimpah.',
-    image: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=400&q=80',
     status_tersedia: false,
     stok: 0,
     salesCount: 88,
@@ -259,7 +259,7 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
     category: 'Cemilan',
     harga: 15000,
     description: 'Pisang raja goreng crispy ditaburi keju parut melimpah dan susu kental manis cokelat.',
-    image: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=400&q=80',
+    image_url: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=400&q=80',
     status_tersedia: true,
     stok: 12,
     salesCount: 74,
@@ -347,3 +347,5 @@ export const MOCK_DRIVER_REQUESTS: DriverRequest[] = [
     expires_at: Date.now() + 30000,
   },
 ];
+
+

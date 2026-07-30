@@ -29,9 +29,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-[#006e2f]" />
+            <ShoppingBag className="w-5 h-5 text-[#BD4444]" />
             <h3 className="text-base font-bold text-slate-900">
-              Detail Pesanan <span className="text-[#006e2f]">{order.order_id}</span>
+              Detail Pesanan <span className="text-[#BD4444]">{order.order_id}</span>
             </h3>
           </div>
           <button
@@ -63,7 +63,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
             {order.deliveryType && (
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-medium">Tipe Layanan</span>
-                <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="font-bold text-[#a13838] bg-[#F1DEC4] px-2 py-0.5 rounded border border-[#e0ceb5]">
                   {order.deliveryType}
                 </span>
               </div>
@@ -86,7 +86,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 <div key={idx} className="p-3 bg-white flex justify-between items-start">
                   <div>
                     <p className="text-xs font-bold text-slate-900">
-                      {item.nama_menu} <span className="text-[#006e2f]">x{item.jumlah}</span>
+                      {item.nama_menu} <span className="text-[#BD4444]">x{item.jumlah}</span>
                     </p>
                     {item.notes && (
                       <p className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1 inline-block border border-amber-200">
@@ -103,14 +103,14 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           </div>
 
           {/* Payment Summary */}
-          <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200/80 flex justify-between items-center">
+          <div className="p-4 bg-[#F1DEC4]/50 rounded-xl border border-[#e0ceb5]/80 flex justify-between items-center">
             <div>
               <p className="text-xs text-slate-500 font-medium">Total Harga</p>
-              <p className="text-base font-extrabold text-[#006e2f]">
+              <p className="text-base font-extrabold text-[#BD4444]">
                 Rp {formattedPrice}
               </p>
             </div>
-            <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-[#006e2f] rounded-full uppercase">
+            <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-[#BD4444] rounded-full uppercase">
               {order.paymentStatus}
             </span>
           </div>
@@ -142,7 +142,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 onClick={() => onUpdateStatus(String(order.order_id), 'SIAP_DIANTAR')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
                   order.status_order === 'SIAP_DIANTAR'
-                    ? 'bg-[#006e2f] text-white border-[#006e2f]'
+                    ? 'bg-[#BD4444] text-white border-[#BD4444]'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
@@ -153,7 +153,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 onClick={() => onUpdateStatus(String(order.order_id), 'SELESAI')}
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
                   order.status_order === 'SELESAI'
-                    ? 'bg-emerald-600 text-white border-emerald-600'
+                    ? 'bg-[#677E61] text-white border-emerald-600'
                     : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >

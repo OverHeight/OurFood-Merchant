@@ -30,8 +30,8 @@ interface SidebarProps {
 const STORE_STATUS_CONFIG: Record<StoreStatus, { label: string; color: string; dotColor: string }> = {
   BUKA: {
     label: 'Toko Buka',
-    color: 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100',
-    dotColor: 'bg-emerald-500',
+    color: 'bg-[#F1DEC4] border-[#e0ceb5] text-[#a13838] hover:bg-[#e0ceb5]',
+    dotColor: 'bg-[#F1DEC4]0',
   },
   TUTUP: {
     label: 'Toko Tutup',
@@ -93,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-xl bg-emerald-700 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-700/20">
+              <div className="w-10 h-10 rounded-xl bg-[#BD4444] flex items-center justify-center text-white shrink-0 shadow-md shadow-[#BD4444]/20">
                 <Store className="w-5 h-5" />
               </div>
               {(!isCollapsedDesktop || isOpenMobile) && (
@@ -151,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onOpenNewOrderModal();
                   onCloseMobile();
                 }}
-                className="w-full py-2.5 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-medium text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
+                className="w-full py-2.5 px-3 bg-[#BD4444] hover:bg-[#a13838] text-white rounded-xl font-medium text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>+ Buat Pesanan Manual</span>
@@ -169,13 +169,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => handleNavClick(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative
                     ${isActive
-                      ? 'bg-emerald-50 text-emerald-800 font-semibold shadow-xs'
+                      ? 'bg-[#F1DEC4] text-[#a13838] font-semibold shadow-xs'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }
                   `}
                   title={item.label}
                 >
-                  <div className={`${isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                  <div className={`${isActive ? 'text-[#BD4444]' : 'text-slate-400 group-hover:text-slate-600'}`}>
                     {item.icon}
                   </div>
 
@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                   {/* Active Indicator Bar on collapsed desktop */}
                   {isActive && isCollapsedDesktop && !isOpenMobile && (
-                    <div className="absolute left-0 top-2 bottom-2 w-1 bg-emerald-700 rounded-r-full" />
+                    <div className="absolute left-0 top-2 bottom-2 w-1 bg-[#BD4444] rounded-r-full" />
                   )}
                 </button>
               );
@@ -203,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <img
               src={merchantProfile.avatarUrl}
               alt={merchantProfile.nama_merchant}
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-emerald-600/30 shrink-0 group-hover:ring-emerald-500 transition-all"
+              className="w-9 h-9 rounded-full object-cover ring-2 ring-[#677E61]/30 shrink-0 group-hover:ring-[#73976A] transition-all"
             />
             {(!isCollapsedDesktop || isOpenMobile) && (
               <div className="flex flex-col truncate text-left">

@@ -73,7 +73,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
         {/* Sidebar: Rating Breakdown */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] h-fit">
           <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-[#006e2f]" />
+            <TrendingUp className="w-4 h-4 text-[#BD4444]" />
             Distribusi Rating
           </h3>
           <div className="space-y-2.5">
@@ -103,7 +103,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
             </p>
             <button
               onClick={() => setFilterRating('semua')}
-              className={`w-full py-1.5 rounded-lg text-xs font-bold transition-all ${filterRating === 'semua' ? 'bg-[#006e2f] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              className={`w-full py-1.5 rounded-lg text-xs font-bold transition-all ${filterRating === 'semua' ? 'bg-[#BD4444] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
             >
               Semua ({reviews.length})
             </button>
@@ -138,7 +138,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
                       <div className="flex flex-col items-end gap-1">
                         <StarRating rating={review.rating} />
                         {review.dibalas && (
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                          <span className="text-[10px] font-bold text-[#BD4444] bg-[#F1DEC4] px-2 py-0.5 rounded-full border border-[#e0ceb5] flex items-center gap-1">
                             <CheckCircle className="w-3 h-3" /> Dibalas
                           </span>
                         )}

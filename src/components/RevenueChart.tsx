@@ -35,7 +35,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ compact = false }) =
       const item = payload[0].payload;
       return (
         <div className="bg-slate-900 text-white p-2.5 rounded-xl text-xs shadow-lg border border-slate-700">
-          <p className="font-bold text-emerald-400">{label}</p>
+          <p className="font-bold text-[#73976A]">{label}</p>
           <p className="font-semibold mt-1">
             Pendapatan: Rp {new Intl.NumberFormat('id-ID').format(item.amount)}
           </p>
@@ -66,12 +66,12 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ compact = false }) =
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-xs text-slate-500 font-medium">
               {config.label}:{' '}
-              <span className="font-bold text-[#006e2f]">
+              <span className="font-bold text-[#BD4444]">
                 Rp {new Intl.NumberFormat('id-ID').format(currentTotal)}
               </span>
             </p>
             {trendVsLast !== null && (
-              <span className={`flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full ${trendVsLast >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+              <span className={`flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full ${trendVsLast >= 0 ? 'bg-emerald-100 text-[#BD4444]' : 'bg-rose-100 text-rose-700'}`}>
                 {trendVsLast >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 {Math.abs(trendVsLast).toFixed(1)}%
               </span>
@@ -87,7 +87,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({ compact = false }) =
               onClick={() => setPeriod(p.key)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
                 period === p.key
-                  ? 'bg-[#006e2f] text-white shadow-xs'
+                  ? 'bg-[#BD4444] text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200'
               }`}
             >

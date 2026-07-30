@@ -1,50 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuItem } from '../types';
-import { UtensilsCrossed, X, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { UtensilsCrossed, X, Save, Image as ImageIcon } from 'lucide-react';
 
-interface AddMenuModalProps {
+interface EditMenuModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (item: Omit<MenuItem, 'menu_id' | 'salesCount'>) => void;
+  onEdit: (menuId: string, updates: Partial<MenuItem>) => void;
   categories: { id: string; nama: string }[];
+  menuItem: MenuItem | null;
 }
 
-export const AddMenuModal: React.FC<AddMenuModalProps> = ({
+export const EditMenuModal: React.FC<EditMenuModalProps> = ({
   isOpen,
   onClose,
-  onAdd,
+  onEdit,
   categories,
+  menuItem,
 }) => {
   const [namaMenu, setNamaMenu] = useState('');
-  const [kategori, setKategori] = useState('Makanan Utama');
+  const [kategori, setKategori] = useState('');
   const [harga, setHarga] = useState('');
-  const [stok, setStok] = useState('10');
+  const [stok, setStok] = useState('');
   const [deskripsi, setDeskripsi] = useState('');
   const [image, setImage] = useState('');
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (menuItem && isOpen) {
+      setNamaMenu(menuItem.nama_menu);
+      setKategori(menuItem.category || categories[0]?.nama || 'Makanan Utama');
+      setHarga(menuItem.harga.toString());
+      setStok(menuItem.stok?.toString() || '0');
+      setDeskripsi(menuItem.description || '');
+      setImage(menuItem.image_url || '');
+    }
+  }, [menuItem, isOpen, categories]);
+
+  if (!isOpen || !menuItem) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!namaMenu || !harga) return;
+    if (!namaMenu || !harga || !menuItem) return;
 
-    onAdd({
+    onEdit(menuItem.menu_id, {
       nama_menu: namaMenu,
       category: kategori,
       harga: parseInt(harga, 10),
       description: deskripsi,
       stok: parseInt(stok, 10) || 0,
-      image_url: image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+      image_url: image || null,
       status_tersedia: parseInt(stok, 10) > 0,
     });
 
-    // Reset
-    setNamaMenu('');
-    setKategori(categories.length > 0 ? categories[0].nama : 'Makanan Utama');
-    setHarga('');
-    setStok('10');
-    setDeskripsi('');
-    setImage('');
     onClose();
   };
 
@@ -55,7 +61,7 @@ export const AddMenuModal: React.FC<AddMenuModalProps> = ({
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2">
             <UtensilsCrossed className="w-5 h-5 text-[#BD4444]" />
-            <h2 className="text-lg font-bold text-slate-900">Tambah Menu Baru</h2>
+            <h2 className="text-lg font-bold text-slate-900">Edit Menu</h2>
           </div>
           <button
             onClick={onClose}
@@ -168,8 +174,8 @@ export const AddMenuModal: React.FC<AddMenuModalProps> = ({
             disabled={!namaMenu || !harga}
             className="px-4 py-2 text-sm font-bold text-white bg-[#BD4444] rounded-xl hover:bg-[#a13838] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            <PlusCircle className="w-4 h-4" />
-            Simpan Menu
+            <Save className="w-4 h-4" />
+            Simpan Perubahan
           </button>
         </div>
       </div>

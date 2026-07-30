@@ -43,7 +43,7 @@ export const MapsView: React.FC<MapsViewProps> = ({ merchantProfile, activeOrder
       {/* Header */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] shrink-0">
         <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <MapIcon className="w-6 h-6 text-[#006e2f]" />
+          <MapIcon className="w-6 h-6 text-[#BD4444]" />
           <span>Live Tracking Pesanan</span>
         </h2>
         <p className="text-xs text-slate-500 font-medium mt-1">
@@ -56,7 +56,7 @@ export const MapsView: React.FC<MapsViewProps> = ({ merchantProfile, activeOrder
         <div className="lg:w-1/3 bg-white rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
           <div className="p-4 border-b border-slate-100 bg-slate-50">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Package className="w-4 h-4 text-[#006e2f]" />
+              <Package className="w-4 h-4 text-[#BD4444]" />
               Pesanan Delivery ({deliveryOrders.length})
             </h3>
           </div>
@@ -74,8 +74,8 @@ export const MapsView: React.FC<MapsViewProps> = ({ merchantProfile, activeOrder
                   onClick={() => setSelectedOrderId(order.order_id)}
                   className={`w-full text-left p-3 rounded-xl border transition-all ${
                     selectedOrderId === order.order_id
-                      ? 'bg-emerald-50 border-emerald-200 shadow-sm'
-                      : 'bg-white border-slate-200 hover:border-emerald-200 hover:bg-slate-50'
+                      ? 'bg-[#F1DEC4] border-[#e0ceb5] shadow-sm'
+                      : 'bg-white border-slate-200 hover:border-[#e0ceb5] hover:bg-slate-50'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -133,7 +133,7 @@ export const MapsView: React.FC<MapsViewProps> = ({ merchantProfile, activeOrder
                 <div className="flex justify-between items-center text-center">
                   <div>
                     <p className="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Status</p>
-                    <p className="text-xs font-bold text-[#006e2f]">{selectedOrder.status_order}</p>
+                    <p className="text-xs font-bold text-[#BD4444]">{selectedOrder.status_order}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Jarak</p>

@@ -23,48 +23,63 @@ export interface OrderItem {
 }
 
 export interface Order {
-  order_id: number | string;
+  order_id: string;
   alamat_pengantaran: string;
   status_order: OrderStatus;
   total_harga: number;
   waktu_checkout: string;
   // ERD User fields (embedded here for convenience as discussed)
-  user_id?: number;
+  user_id?: string;
   nama?: string;
   no_hp?: string;
   // UI additions
-  paymentStatus: PaymentStatus;
+  paymentStatus?: PaymentStatus;
   deliveryType?: 'Takeaway' | 'Delivery' | 'Dine-In';
   items: OrderItem[];
   cancelReason?: string;
 }
 
+export interface Transaction {
+  transaksi_id: string;
+  order_id: string;
+  payment_type: string | null;
+  biaya_antar: number | null;
+  subtotal: number | null;
+  diskon: number | null;
+  pajak: number | null;
+  status_transaksi: string | null;
+  total_harga: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MenuItem {
-  menu_id: number | string;
-  merchant_id?: number | string;
+  menu_id: string;
+  merchant_id?: string;
+  kategori_id?: string;
   nama_menu: string;
   harga: number;
   status_tersedia: boolean;
-  stok: number;
+  stok?: number;
   // UI additions
-  category: 'Makanan Utama' | 'Minuman' | 'Cemilan' | 'Paket Hemat';
-  description: string;
-  image: string;
-  salesCount: number;
+  category?: string; // Fetched from kategori table
+  description?: string;
+  image_url?: string;
+  salesCount?: number;
 }
 
 export interface MerchantProfile {
-  merchant_id: number | string;
-  order_id?: number | string; // FK from ERD
-  menu_id?: number | string; // FK from ERD
+  merchant_id: string;
+  order_id?: string; // FK from ERD
+  menu_id?: string; // FK from ERD
   nama_merchant: string;
   alamat: string;
   no_hp: string;
   // UI additions
-  storeStatus: StoreStatus;
-  avatarUrl: string;
-  rating: number;
-  totalOrdersThisMonth: number;
+  storeStatus?: StoreStatus;
+  avatarUrl?: string; // Map from img_url
+  rating?: number;
+  totalOrdersThisMonth?: number;
 }
 
 export interface RevenueDataPoint {

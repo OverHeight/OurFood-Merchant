@@ -24,7 +24,7 @@ export const StatCardsRow: React.FC<StatCardsRowProps> = ({
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
           Pesanan Hari Ini
         </span>
-        <h2 className="text-3xl font-bold text-[#006e2f] mt-2">
+        <h2 className="text-3xl font-bold text-[#BD4444] mt-2">
           {todayCount}
         </h2>
       </div>
@@ -60,7 +60,7 @@ export const StatCardsRow: React.FC<StatCardsRowProps> = ({
       </div>
 
       {/* Revenue */}
-      <div className="bg-gradient-to-br from-[#006e2f] to-emerald-700 p-6 rounded-2xl shadow-lg border border-emerald-800/60 flex flex-col justify-between transition-all col-span-2 md:col-span-4 text-white">
+      <div className="bg-gradient-to-br from-[#BD4444] to-emerald-700 p-6 rounded-2xl shadow-lg border border-emerald-800/60 flex flex-col justify-between transition-all col-span-2 md:col-span-4 text-white">
         <span className="text-sm font-semibold text-emerald-100 uppercase tracking-wider">
           Total Pendapatan
         </span>

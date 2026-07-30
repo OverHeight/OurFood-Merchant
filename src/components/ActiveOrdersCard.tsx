@@ -20,12 +20,12 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
   const getOrderIcon = (itemNames: string) => {
     const lower = itemNames.toLowerCase();
     if (lower.includes('kopi') || lower.includes('teh') || lower.includes('es')) {
-      return <Coffee className="w-6 h-6 text-[#006e2f]" />;
+      return <Coffee className="w-6 h-6 text-[#BD4444]" />;
     }
     if (lower.includes('soto') || lower.includes('sop')) {
-      return <Soup className="w-6 h-6 text-[#006e2f]" />;
+      return <Soup className="w-6 h-6 text-[#BD4444]" />;
     }
-    return <Utensils className="w-6 h-6 text-[#006e2f]" />;
+    return <Utensils className="w-6 h-6 text-[#BD4444]" />;
   };
 
   const getStatusBadge = (status: OrderStatus) => {
@@ -33,7 +33,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
       case 'SEDANG_DIMASAK':
         return <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">Sedang Dimasak</span>;
       case 'SIAP_DIANTAR':
-        return <span className="text-xs font-bold text-[#006e2f] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">Siap Diantar</span>;
+        return <span className="text-xs font-bold text-[#BD4444] bg-[#F1DEC4] px-2.5 py-1 rounded-full border border-[#e0ceb5]">Siap Diantar</span>;
       case 'DISIAPKAN':
         return <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">Menunggu Konfirmasi</span>;
       case 'DIANTAR':
@@ -49,13 +49,13 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
       <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-bold text-slate-900">Pesanan Aktif</h3>
-          <span className="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
+          <span className="text-xs font-bold px-2 py-0.5 bg-emerald-100 text-[#a13838] rounded-full">
             {orders.length}
           </span>
         </div>
         <button
           onClick={onViewAll}
-          className="text-xs font-bold text-[#006e2f] hover:underline flex items-center gap-1"
+          className="text-xs font-bold text-[#BD4444] hover:underline flex items-center gap-1"
         >
           Lihat Semua <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -85,7 +85,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                 className={`group p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
                   order.status_order === 'DISIAPKAN'
                     ? 'bg-blue-50/60 border-blue-200 hover:border-blue-300'
-                    : 'bg-[#f8f9ff] border-slate-200/80 hover:border-emerald-300'
+                    : 'bg-[#fcf8f2] border-slate-200/80 hover:border-emerald-300'
                 }`}
               >
                 {/* Left side info */}
@@ -96,7 +96,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                     order.status_order === 'DISIAPKAN'
                       ? 'bg-blue-100 border-blue-200'
-                      : 'bg-emerald-50 border-emerald-100'
+                      : 'bg-[#F1DEC4] border-emerald-100'
                   }`}>
                     {getOrderIcon(summaryTitle)}
                   </div>
@@ -131,7 +131,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                       <>
                         <button
                           onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
-                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
+                          className="px-2.5 py-1.5 bg-[#677E61] hover:bg-[#BD4444] text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                           title="Terima & Proses Masak"
                         >
                           Terima
@@ -148,7 +148,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                     {order.status_order === 'SEDANG_DIMASAK' && (
                       <button
                         onClick={() => onUpdateStatus(String(order.order_id), 'SIAP_DIANTAR')}
-                        className="px-2.5 py-1.5 bg-[#006e2f] hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
+                        className="px-2.5 py-1.5 bg-[#BD4444] hover:bg-[#a13838] text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                         title="Tandai Siap Diantar"
                       >
                         Siap
@@ -157,7 +157,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
                     {order.status_order === 'SIAP_DIANTAR' && (
                       <button
                         onClick={() => onUpdateStatus(String(order.order_id), 'SELESAI')}
-                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
+                        className="px-2.5 py-1.5 bg-[#677E61] hover:bg-[#BD4444] text-white rounded-lg text-xs font-bold transition-all shadow-2xs"
                         title="Tandai Selesai"
                       >
                         Selesai
@@ -173,7 +173,7 @@ export const ActiveOrdersCard: React.FC<ActiveOrdersCardProps> = ({
         {/* Atmospheric Placeholder Footer */}
         <div className="mt-2 pt-4 border-t border-slate-100 flex items-center justify-center text-slate-400 opacity-60">
           <div className="text-center flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-[#F1DEC4]0 animate-ping" />
             <p className="text-xs font-medium text-slate-500">
               Menunggu pesanan baru masuk...
             </p>

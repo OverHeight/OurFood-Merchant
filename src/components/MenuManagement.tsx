@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { MenuItem } from '../types';
-import { UtensilsCrossed, Plus, Search, CheckCircle, XCircle, Tag, TrendingUp } from 'lucide-react';
+import React, { useState } from "react";
+import { MenuItem } from "../types";
+import {
+  UtensilsCrossed,
+  Plus,
+  Search,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  Tag,
+  TrendingUp,
+} from "lucide-react";
 
 interface MenuManagementProps {
   menuItems: MenuItem[];
   onToggleStock: (menuId: string) => void;
   onOpenAddMenu: () => void;
   onOpenUpdateStock: (item: MenuItem) => void;
+  onOpenEditMenu: (item: MenuItem) => void;
+  onDeleteMenu: (menuId: string) => void;
 }
 
 export const MenuManagement: React.FC<MenuManagementProps> = ({
@@ -14,17 +25,36 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
   onToggleStock,
   onOpenAddMenu,
   onOpenUpdateStock,
+  onOpenEditMenu,
+  onDeleteMenu,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = ['Semua', 'Makanan Utama', 'Minuman', 'Cemilan'];
+  // Derive categories dynamically from menu items
+  const dynamicCategories = Array.from(
+    new Set(menuItems.map((item) => item.category || "Uncategorized")),
+  );
+  const categories = ["Semua", ...dynamicCategories];
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesCategory = selectedCategory === 'Semua' || item.kategori === selectedCategory;
-    const matchesSearch = item.nama_menu.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredItems = menuItems
+    .filter((item) => {
+      const itemCategory = item.category || "Uncategorized";
+      const matchesCategory =
+        selectedCategory === "Semua" || itemCategory === selectedCategory;
+      const matchesSearch = item.nama_menu
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      const stockA = a.stok ?? 0;
+      const stockB = b.stok ?? 0;
+      if (stockA === stockB) {
+        return a.nama_menu.localeCompare(b.nama_menu);
+      }
+      return stockB - stockA;
+    });
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -32,11 +62,12 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <UtensilsCrossed className="w-6 h-6 text-[#006e2f]" />
+            <UtensilsCrossed className="w-6 h-6 text-[#BD4444]" />
             <span>Manajemen Menu & Stok</span>
           </h2>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Kelola ketersediaan menu makanan & minuman restoran Anda secara realtime.
+            Kelola ketersediaan menu makanan & minuman restoran Anda secara
+            realtime.
           </p>
         </div>
 
@@ -44,7 +75,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
             onClick={onOpenAddMenu}
-            className="px-4 py-2 bg-[#006e2f] hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
+            className="px-4 py-2 bg-[#BD4444] hover:bg-[#a13838] text-white rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Menu</span>
@@ -56,7 +87,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
               placeholder="Cari menu..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none w-full sm:w-48 bg-slate-50"
+              className="pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none w-full sm:w-48 bg-slate-50"
             />
           </div>
         </div>
@@ -70,8 +101,8 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
             onClick={() => setSelectedCategory(cat)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${
               selectedCategory === cat
-                ? 'bg-[#006e2f] text-white shadow-xs'
-                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                ? "bg-[#BD4444] text-white shadow-xs"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
             }`}
           >
             {cat}
@@ -89,35 +120,55 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
             <div>
               <div className="relative h-40 w-full rounded-xl overflow-hidden bg-slate-100 mb-3">
                 <img
-                  src={item.image}
+                  src={item.image_url || "https://via.placeholder.com/150"}
                   alt={item.nama_menu}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="absolute top-2 left-2 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold rounded-lg flex items-center gap-1">
-                  <Tag className="w-3 h-3 text-emerald-400" /> {item.kategori}
+                  <Tag className="w-3 h-3 text-[#73976A]" /> {item.category}
                 </span>
 
                 <span
                   className={`absolute top-2 right-2 px-2.5 py-1 text-[10px] font-bold rounded-lg backdrop-blur-xs ${
                     item.status_tersedia
-                      ? 'bg-emerald-500/90 text-white'
-                      : 'bg-rose-500/90 text-white'
+                      ? "bg-[#F1DEC4]0/90 text-white"
+                      : "bg-rose-500/90 text-white"
                   }`}
                 >
-                  {item.status_tersedia ? 'Tersedia' : 'Stok Habis'}
+                  {item.status_tersedia ? "Tersedia" : "Stok Habis"}
                 </span>
               </div>
 
               <div className="flex justify-between items-start mb-1">
-                <h3 className="text-base font-bold text-slate-900">{item.nama_menu}</h3>
-                <span className="text-sm font-extrabold text-[#006e2f]">
-                  Rp {new Intl.NumberFormat('id-ID').format(item.harga)}
-                </span>
+                <h3 className="text-base font-bold text-slate-900 pr-2">
+                  {item.nama_menu}
+                </h3>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => onOpenEditMenu(item)}
+                    className="text-[10px] font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Hapus menu "${item.nama_menu}"?`)) {
+                        onDeleteMenu(String(item.menu_id));
+                      }
+                    }}
+                    className="text-[10px] font-bold text-rose-600 hover:text-white bg-rose-100 hover:bg-rose-600 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Hapus
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[11px] font-bold text-slate-500">Stok: {item.stok}</span>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Stok: {item.stok ?? 0}
+                  </span>
                   <button
                     onClick={() => onOpenUpdateStock(item)}
                     className="p-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
@@ -134,13 +185,13 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
               </div>
 
               <p className="text-xs text-slate-500 line-clamp-2 mb-3">
-                {item.deskripsi}
+                {item.description || "Tidak ada deskripsi"}
               </p>
             </div>
 
             <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+                <TrendingUp className="w-3.5 h-3.5 text-[#677E61]" />
                 <span>Terjual {item.salesCount || 0}x</span>
               </div>
 
@@ -150,10 +201,10 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                 disabled={item.stok === 0}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
                   item.stok === 0
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                    ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                     : item.status_tersedia
-                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200'
-                      : 'bg-emerald-50 text-[#006e2f] hover:bg-emerald-100 border border-emerald-200'
+                      ? "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200"
+                      : "bg-[#F1DEC4] text-[#BD4444] hover:bg-[#e0ceb5] border border-[#e0ceb5]"
                 }`}
               >
                 {item.status_tersedia ? (

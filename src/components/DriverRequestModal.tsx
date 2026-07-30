@@ -44,7 +44,7 @@ export const DriverRequestModal: React.FC<DriverRequestModalProps> = ({
         {/* Timer Bar */}
         <div className="h-1.5 bg-slate-100 w-full">
           <div
-            className={`h-full transition-all duration-1000 ${timeLeft > 10 ? 'bg-emerald-500' : 'bg-rose-500'}`}
+            className={`h-full transition-all duration-1000 ${timeLeft > 10 ? 'bg-[#F1DEC4]0' : 'bg-rose-500'}`}
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -58,7 +58,7 @@ export const DriverRequestModal: React.FC<DriverRequestModalProps> = ({
             </h3>
             <p className="text-[11px] text-slate-500 mt-0.5">Untuk pesanan {request.order_id}</p>
           </div>
-          <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${timeLeft > 10 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700 animate-pulse'}`}>
+          <div className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${timeLeft > 10 ? 'bg-emerald-100 text-[#BD4444]' : 'bg-rose-100 text-rose-700 animate-pulse'}`}>
             <Clock className="w-3 h-3" />
             {timeLeft}s
           </div>

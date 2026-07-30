@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { MenuItem, Order, OrderStatus, PaymentStatus } from '../types';
-import { X, Plus, Minus, ShoppingBag, User, Phone, MapPin } from 'lucide-react';
+import React, { useState } from "react";
+import { MenuItem, Order, OrderStatus, PaymentStatus } from "../types";
+import { X, Plus, Minus, ShoppingBag, User, Phone, MapPin } from "lucide-react";
 
 interface NewOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   menuItems: MenuItem[];
-  onAddOrder: (newOrder: Order) => void;
+  onAddOrder: (newOrder: Order) => Promise<void>;
 }
 
 export const NewOrderModal: React.FC<NewOrderModalProps> = ({
@@ -17,19 +17,29 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [deliveryType, setDeliveryType] = useState<'Takeaway' | 'Delivery' | 'Dine-In'>('Takeaway');
-  const [address, setAddress] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('SUDAH_BAYAR');
-  const [selectedCart, setSelectedCart] = useState<{ item: MenuItem; quantity: number; notes: string }[]>([]);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [deliveryType, setDeliveryType] = useState<
+    "Takeaway" | "Delivery" | "Dine-In"
+  >("Takeaway");
+  const [address, setAddress] = useState("");
+  const [paymentStatus, setPaymentStatus] =
+    useState<PaymentStatus>("SUDAH_BAYAR");
+  const [selectedCart, setSelectedCart] = useState<
+    { item: MenuItem; quantity: number; notes: string }[]
+  >([]);
 
   const handleToggleCartItem = (menu: MenuItem) => {
     const existing = selectedCart.find((c) => c.item.menu_id === menu.menu_id);
     if (existing) {
-      setSelectedCart(selectedCart.filter((c) => c.item.menu_id !== menu.menu_id));
+      setSelectedCart(
+        selectedCart.filter((c) => c.item.menu_id !== menu.menu_id),
+      );
     } else {
-      setSelectedCart([...selectedCart, { item: menu, quantity: 1, notes: '' }]);
+      setSelectedCart([
+        ...selectedCart,
+        { item: menu, quantity: 1, notes: "" },
+      ]);
     }
   };
 
@@ -41,24 +51,32 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
           return { ...c, quantity: newQty };
         }
         return c;
-      })
+      }),
     );
   };
 
   const handleNotesChange = (menuId: string | number, notes: string) => {
     setSelectedCart(
-      selectedCart.map((c) => (c.item.menu_id === menuId ? { ...c, notes } : c))
+      selectedCart.map((c) =>
+        c.item.menu_id === menuId ? { ...c, notes } : c,
+      ),
     );
   };
 
-  const totalPrice = selectedCart.reduce((sum, c) => sum + c.item.harga * c.quantity, 0);
+  const totalPrice = selectedCart.reduce(
+    (sum, c) => sum + c.item.harga * c.quantity,
+    0,
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || selectedCart.length === 0) return;
 
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const timeStr = now.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     const newOrder: Order = {
       order_id: `#ORD-${Math.floor(100000000 + Math.random() * 900000000)}`,
@@ -74,21 +92,21 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
         notes: c.notes || undefined,
       })),
       total_harga: totalPrice,
-      status_order: 'DISIAPKAN',
+      status_order: "DISIAPKAN",
       paymentStatus,
       waktu_checkout: now.toISOString(),
       deliveryType,
       alamat_pengantaran: address.trim() || undefined,
     };
 
-    onAddOrder(newOrder);
+    await onAddOrder(newOrder);
     onClose();
 
     // Reset Form
-    setCustomerName('');
-    setCustomerPhone('');
+    setCustomerName("");
+    setCustomerPhone("");
     setSelectedCart([]);
-    setAddress('');
+    setAddress("");
   };
 
   return (
@@ -97,8 +115,10 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
         {/* Modal Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-[#006e2f]" />
-            <h3 className="text-lg font-bold text-slate-900">Buat Pesanan Manual</h3>
+            <ShoppingBag className="w-5 h-5 text-[#BD4444]" />
+            <h3 className="text-lg font-bold text-slate-900">
+              Buat Pesanan Manual
+            </h3>
           </div>
           <button
             onClick={onClose}
@@ -124,7 +144,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   placeholder="Contoh: Budi Santoso"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] focus:ring-1 focus:ring-[#006e2f] outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] focus:ring-1 focus:ring-[#006e2f] outline-none"
                 />
               </div>
             </div>
@@ -140,7 +160,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                   placeholder="0812xxxxxxx"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] focus:ring-1 focus:ring-[#006e2f] outline-none"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] focus:ring-1 focus:ring-[#006e2f] outline-none"
                 />
               </div>
             </div>
@@ -154,13 +174,12 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
             <select
               value={paymentStatus}
               onChange={(e: any) => setPaymentStatus(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
             >
               <option value="SUDAH_BAYAR">Sudah Bayar (Lunas)</option>
               <option value="BELUM_BAYAR">Belum Bayar (Cash/Unpaid)</option>
             </select>
           </div>
-
 
           {/* Menu Selection */}
           <div>
@@ -168,35 +187,52 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
               Pilih Item Menu <span className="text-rose-500">*</span>
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border border-slate-200 rounded-xl bg-slate-50">
-              {menuItems.map((m) => {
-                const isSelected = selectedCart.some((c) => c.item.menu_id === m.menu_id);
-                return (
-                  <button
-                    type="button"
-                    key={m.menu_id}
-                    onClick={() => handleToggleCartItem(m)}
-                    className={`p-2.5 rounded-xl text-left border transition-all flex items-center gap-2.5
+              {menuItems
+                .slice()
+                .sort((a, b) => {
+                  const stockA = a.stok ?? 0;
+                  const stockB = b.stok ?? 0;
+                  if (stockA === stockB) {
+                    return a.nama_menu.localeCompare(b.nama_menu);
+                  }
+                  return stockB - stockA;
+                })
+                .map((m) => {
+                  const isSelected = selectedCart.some(
+                    (c) => c.item.menu_id === m.menu_id,
+                  );
+                  return (
+                    <button
+                      type="button"
+                      key={m.menu_id}
+                      onClick={() => handleToggleCartItem(m)}
+                      disabled={m.stok === 0}
+                      className={`p-2.5 rounded-xl text-left border transition-all flex items-center gap-2.5
                       ${
                         isSelected
-                          ? 'bg-emerald-50 border-[#006e2f] text-emerald-900 font-semibold'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
+                          ? "bg-[#F1DEC4] border-[#BD4444] text-emerald-900 font-semibold"
+                          : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
                       }
+                      ${m.stok === 0 ? "opacity-60 cursor-not-allowed bg-slate-100 border-slate-200" : ""}
                     `}
-                  >
-                    <img
-                      src={m.image}
-                      alt={m.nama_menu}
-                      className="w-9 h-9 rounded-lg object-cover shrink-0"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate">{m.nama_menu}</p>
-                      <p className="text-[11px] text-slate-500">
-                        Rp {new Intl.NumberFormat('id-ID').format(m.harga)}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
+                    >
+                      <img
+                        src={m.image}
+                        alt={m.nama_menu}
+                        className="w-9 h-9 rounded-lg object-cover shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold truncate">
+                          {m.nama_menu}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Rp {new Intl.NumberFormat("id-ID").format(m.harga)} •
+                          Stok {m.stok ?? 0}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
 
@@ -207,9 +243,14 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                 Item Dipilih ({selectedCart.length})
               </label>
               {selectedCart.map((c) => (
-                <div key={c.item.menu_id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2">
+                <div
+                  key={c.item.menu_id}
+                  className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col gap-2"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">{c.item.nama_menu}</span>
+                    <span className="text-xs font-bold text-slate-800">
+                      {c.item.nama_menu}
+                    </span>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
@@ -234,7 +275,9 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     type="text"
                     placeholder="Catatan kustom (misal: pedas, es sedikit)"
                     value={c.notes}
-                    onChange={(e) => handleNotesChange(c.item.menu_id, e.target.value)}
+                    onChange={(e) =>
+                      handleNotesChange(c.item.menu_id, e.target.value)
+                    }
                     className="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 bg-white"
                   />
                 </div>
@@ -245,9 +288,11 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
           {/* Total & Submit Button */}
           <div className="border-t border-slate-200 pt-4 flex items-center justify-between">
             <div>
-              <p className="text-xs text-slate-500 font-medium">Total Pembayaran</p>
-              <p className="text-lg font-bold text-[#006e2f]">
-                Rp {new Intl.NumberFormat('id-ID').format(totalPrice)}
+              <p className="text-xs text-slate-500 font-medium">
+                Total Pembayaran
+              </p>
+              <p className="text-lg font-bold text-[#BD4444]">
+                Rp {new Intl.NumberFormat("id-ID").format(totalPrice)}
               </p>
             </div>
 
@@ -262,7 +307,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
               <button
                 type="submit"
                 disabled={!customerName.trim() || selectedCart.length === 0}
-                className="px-5 py-2.5 bg-[#006e2f] hover:bg-emerald-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all"
+                className="px-5 py-2.5 bg-[#BD4444] hover:bg-[#a13838] disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md transition-all"
               >
                 Simpan Pesanan
               </button>

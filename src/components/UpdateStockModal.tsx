@@ -39,7 +39,7 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm flex flex-col overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-[#006e2f]" />
+            <Package className="w-5 h-5 text-[#BD4444]" />
             <h2 className="text-base font-bold text-slate-900">Update Stok</h2>
           </div>
           <button
@@ -64,7 +64,7 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
                 min="0"
                 value={stok}
                 onChange={(e) => setStok(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
               />
             </div>
           </form>
@@ -82,7 +82,7 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
             type="submit"
             form="update-stock-form"
             disabled={stok === ''}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#006e2f] rounded-xl hover:bg-emerald-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="px-4 py-2 text-xs font-bold text-white bg-[#BD4444] rounded-xl hover:bg-[#a13838] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
             <Check className="w-3.5 h-3.5" />
             Simpan

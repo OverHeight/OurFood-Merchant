@@ -3,7 +3,7 @@ import { NavTab, MerchantProfile, StoreStatus } from '../types';
 import { Menu, Bell } from 'lucide-react';
 
 const STORE_STATUS_CHIP: Record<StoreStatus, { label: string; cls: string; dot: string }> = {
-  BUKA: { label: 'Buka', cls: 'bg-emerald-50 text-emerald-800 border-emerald-200', dot: 'bg-emerald-500' },
+  BUKA: { label: 'Buka', cls: 'bg-[#F1DEC4] text-[#a13838] border-[#e0ceb5]', dot: 'bg-[#F1DEC4]0' },
   TUTUP: { label: 'Tutup', cls: 'bg-rose-50 text-rose-800 border-rose-200', dot: 'bg-rose-500' },
   TIDAK_MENERIMA: { label: 'Tidak Menerima', cls: 'bg-amber-50 text-amber-800 border-amber-200', dot: 'bg-amber-500' },
 };
@@ -44,10 +44,10 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-lg md:text-xl font-bold text-[#006e2f] tracking-tight">
+          <span className="text-lg md:text-xl font-bold text-[#BD4444] tracking-tight">
             OurFood
           </span>
-          <span className="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+          <span className="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F1DEC4] text-[#a13838] border border-[#e0ceb5]">
             Merchant
           </span>
         </div>
@@ -58,8 +58,8 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => onSelectTab('dashboard')}
           className={`text-sm font-semibold transition-all py-1 ${currentTab === 'dashboard'
-              ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
-              : 'text-slate-600 hover:text-[#006e2f]'
+              ? 'text-[#BD4444] border-b-2 border-[#BD4444]'
+              : 'text-slate-600 hover:text-[#BD4444]'
             }`}
         >
           Order / Dashboard
@@ -67,8 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => onSelectTab('menu')}
           className={`text-sm font-semibold transition-all py-1 ${currentTab === 'menu'
-              ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
-              : 'text-slate-600 hover:text-[#006e2f]'
+              ? 'text-[#BD4444] border-b-2 border-[#BD4444]'
+              : 'text-slate-600 hover:text-[#BD4444]'
             }`}
         >
           Menu
@@ -76,8 +76,8 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => onSelectTab('reviews')}
           className={`text-sm font-semibold transition-all py-1 ${currentTab === 'reviews'
-              ? 'text-[#006e2f] border-b-2 border-[#006e2f]'
-              : 'text-slate-600 hover:text-[#006e2f]'
+              ? 'text-[#BD4444] border-b-2 border-[#BD4444]'
+              : 'text-slate-600 hover:text-[#BD4444]'
             }`}
         >
           Ulasan
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-3 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <span className="font-bold text-sm text-slate-900">Notifikasi Pesanan</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-[#a13838] rounded-full">
                   {unreadCount} Baru
                 </span>
               </div>

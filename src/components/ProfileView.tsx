@@ -44,12 +44,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Form Card */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
         <h3 className="text-lg font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-          <Store className="w-5 h-5 text-[#006e2f]" />
+          <Store className="w-5 h-5 text-[#BD4444]" />
           <span>Informasi & Pengaturan Restoran</span>
         </h3>
 
         {isSaved && (
-          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2">
+          <div className="mb-4 p-3 bg-[#F1DEC4] border border-[#e0ceb5] text-[#a13838] rounded-xl text-xs font-bold flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />
             <span>Perubahan profil merchant berhasil disimpan!</span>
           </div>
@@ -65,7 +65,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 type="text"
                 value={formData.nama_merchant}
                 onChange={(e) => setFormData({ ...formData, nama_merchant: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
               />
             </div>
 
@@ -77,7 +77,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 type="text"
                 value={formData.no_hp}
                 onChange={(e) => setFormData({ ...formData, no_hp: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
               />
             </div>
           </div>
@@ -90,14 +90,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="text"
               value={formData.alamat}
               onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
             />
           </div>
 
           <div className="pt-4 flex justify-end">
             <button
               type="submit"
-              className="px-5 py-2.5 bg-[#006e2f] hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#BD4444] hover:bg-[#a13838] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Simpan Perubahan</span>

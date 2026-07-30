@@ -42,7 +42,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case 'SELESAI':
-        return <span className="px-2.5 py-1 bg-emerald-100 text-[#006e2f] rounded-full text-xs font-bold">Selesai</span>;
+        return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Selesai</span>;
       case 'SEDANG_DIMASAK':
         return <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Sedang Dimasak</span>;
       case 'SIAP_DIANTAR':
@@ -61,7 +61,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <ClipboardList className="w-6 h-6 text-[#006e2f]" />
+            <ClipboardList className="w-6 h-6 text-[#BD4444]" />
             <span>Semua Pesanan Restoran</span>
           </h2>
           <p className="text-xs text-slate-500 font-medium mt-1">
@@ -77,7 +77,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
             placeholder="Cari ID Order / Pelanggan..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#006e2f] outline-none bg-slate-50"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none bg-slate-50"
           />
         </div>
       </div>
@@ -88,7 +88,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
           onClick={() => setFilterTab('semua')}
           className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
             filterTab === 'semua'
-              ? 'bg-[#006e2f] text-white shadow-xs'
+              ? 'bg-[#BD4444] text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
           }`}
         >
@@ -108,7 +108,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
           onClick={() => setFilterTab('selesai')}
           className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
             filterTab === 'selesai'
-              ? 'bg-emerald-600 text-white shadow-xs'
+              ? 'bg-[#677E61] text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
           }`}
         >
@@ -155,7 +155,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
 
                   return (
                     <tr key={order.order_id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-[#006e2f]">
+                      <td className="py-3.5 px-4 font-bold text-[#BD4444]">
                         {order.order_id}
                         <span className="block text-[10px] text-slate-400 font-normal">
                           {order.waktu_checkout}
@@ -174,7 +174,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => onSelectOrder(order)}
-                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#006e2f] border border-emerald-200 font-bold rounded-lg transition-all inline-flex items-center gap-1"
+                          className="px-3 py-1.5 bg-[#F1DEC4] hover:bg-[#e0ceb5] text-[#BD4444] border border-[#e0ceb5] font-bold rounded-lg transition-all inline-flex items-center gap-1"
                         >
                           <Eye className="w-3.5 h-3.5" /> Detail
                         </button>
