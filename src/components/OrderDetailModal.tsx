@@ -1,6 +1,16 @@
-import React from 'react';
-import { Order, OrderStatus } from '../types';
-import { X, Printer, Clock, User, Phone, MapPin, CheckCircle, AlertCircle, ShoppingBag } from 'lucide-react';
+import React from "react";
+import { Order, OrderStatus, PaymentStatus } from "../types";
+import {
+  X,
+  Printer,
+  Clock,
+  User,
+  Phone,
+  MapPin,
+  CheckCircle,
+  AlertCircle,
+  ShoppingBag,
+} from "lucide-react";
 
 interface OrderDetailModalProps {
   order: Order | null;
@@ -21,7 +31,29 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
     window.print();
   };
 
-  const formattedPrice = new Intl.NumberFormat('id-ID').format(order.total_harga);
+  const formattedPrice = new Intl.NumberFormat("id-ID").format(
+    order.total_harga,
+  );
+
+  const paymentLabel = (status?: PaymentStatus | string | null) => {
+    const normalized = String(status || "")
+      .trim()
+      .toUpperCase();
+
+    if (
+      normalized === "SUDAH_BAYAR" ||
+      normalized === "LUNAS" ||
+      normalized === "PAID"
+    ) {
+      return "Sudah Bayar";
+    }
+
+    if (normalized === "REFUNDED" || normalized === "REFUND") {
+      return "Refunded";
+    }
+
+    return "Belum Bayar";
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
@@ -31,7 +63,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#BD4444]" />
             <h3 className="text-base font-bold text-slate-900">
-              Detail Pesanan <span className="text-[#BD4444]">{order.order_id}</span>
+              Detail Pesanan{" "}
+              <span className="text-[#BD4444]">{order.order_id}</span>
             </h3>
           </div>
           <button
@@ -46,28 +79,36 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-4">
           {/* Customer & Order Metadata Card */}
           <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-200/80">
+            <div className="flex justify-between items-start pb-2 border-b border-slate-200/80">
               <span className="text-slate-500 font-medium">Pelanggan</span>
-              <span className="font-bold text-slate-900">{order.nama}</span>
+              <div className="text-right">
+                <span className="font-bold text-slate-900 block">
+                  {order.nama || "Pelanggan Walk-in"}
+                </span>
+                {(order.customerType === "walk-in" ||
+                  (!order.user_id && !order.no_hp)) && (
+                  <span className="mt-1 inline-block px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase">
+                    Pelanggan Walk-in
+                  </span>
+                )}
+              </div>
             </div>
             {order.no_hp && (
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-medium">No. Telepon</span>
-                <span className="font-semibold text-slate-800">{order.no_hp}</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 font-medium">Waktu Pemesanan</span>
-              <span className="font-semibold text-slate-800">{order.waktu_checkout} WIB</span>
-            </div>
-            {order.deliveryType && (
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Tipe Layanan</span>
-                <span className="font-bold text-[#a13838] bg-[#F1DEC4] px-2 py-0.5 rounded border border-[#e0ceb5]">
-                  {order.deliveryType}
+                <span className="font-semibold text-slate-800">
+                  {order.no_hp}
                 </span>
               </div>
             )}
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500 font-medium">
+                Waktu Pemesanan
+              </span>
+              <span className="font-semibold text-slate-800">
+                {order.waktu_checkout} WIB
+              </span>
+            </div>
             {order.alamat_pengantaran && (
               <div className="flex justify-between items-start pt-1">
                 <span className="text-slate-500 font-medium">Alamat</span>
@@ -80,13 +121,19 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
           {/* Ordered Items List */}
           <div>
-            <p className="text-xs font-bold text-slate-700 uppercase mb-2">Rincian Item</p>
+            <p className="text-xs font-bold text-slate-700 uppercase mb-2">
+              Rincian Item
+            </p>
             <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
               {order.items.map((item, idx) => (
-                <div key={idx} className="p-3 bg-white flex justify-between items-start">
+                <div
+                  key={idx}
+                  className="p-3 bg-white flex justify-between items-start"
+                >
                   <div>
                     <p className="text-xs font-bold text-slate-900">
-                      {item.nama_menu} <span className="text-[#BD4444]">x{item.jumlah}</span>
+                      {item.nama_menu}{" "}
+                      <span className="text-[#BD4444]">x{item.jumlah}</span>
                     </p>
                     {item.notes && (
                       <p className="text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-1 inline-block border border-amber-200">
@@ -95,7 +142,10 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     )}
                   </div>
                   <p className="text-xs font-bold text-slate-800">
-                    Rp {new Intl.NumberFormat('id-ID').format(item.harga_saat_itu * item.jumlah)}
+                    Rp{" "}
+                    {new Intl.NumberFormat("id-ID").format(
+                      item.harga_saat_itu * item.jumlah,
+                    )}
                   </p>
                 </div>
               ))}
@@ -111,50 +161,60 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
               </p>
             </div>
             <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-[#BD4444] rounded-full uppercase">
-              {order.paymentStatus}
+              {paymentLabel(order.paymentStatus)}
             </span>
           </div>
 
           {/* Cancel Reason (if cancelled) */}
-          {order.status_order === 'BATAL' && order.cancelReason && (
+          {order.status_order === "BATAL" && order.cancelReason && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
-              <p className="text-xs font-bold text-rose-700 mb-1">Alasan Pembatalan:</p>
+              <p className="text-xs font-bold text-rose-700 mb-1">
+                Alasan Pembatalan:
+              </p>
               <p className="text-xs text-rose-600">{order.cancelReason}</p>
             </div>
           )}
 
           {/* Quick Status Control */}
           <div className="space-y-2 pt-2 border-t border-slate-100">
-            <p className="text-xs font-bold text-slate-700 uppercase">Ubah Status Pesanan</p>
+            <p className="text-xs font-bold text-slate-700 uppercase">
+              Ubah Status Pesanan
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
-                onClick={() => onUpdateStatus(String(order.order_id), 'SEDANG_DIMASAK')}
+                onClick={() =>
+                  onUpdateStatus(String(order.order_id), "SEDANG_DIMASAK")
+                }
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status_order === 'SEDANG_DIMASAK'
-                    ? 'bg-amber-500 text-white border-amber-500'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  order.status_order === "SEDANG_DIMASAK"
+                    ? "bg-amber-500 text-white border-amber-500"
+                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 Diproses
               </button>
 
               <button
-                onClick={() => onUpdateStatus(String(order.order_id), 'SIAP_DIANTAR')}
+                onClick={() =>
+                  onUpdateStatus(String(order.order_id), "SIAP_DIANTAR")
+                }
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status_order === 'SIAP_DIANTAR'
-                    ? 'bg-[#BD4444] text-white border-[#BD4444]'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  order.status_order === "SIAP_DIANTAR"
+                    ? "bg-[#BD4444] text-white border-[#BD4444]"
+                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 Siap
               </button>
 
               <button
-                onClick={() => onUpdateStatus(String(order.order_id), 'SELESAI')}
+                onClick={() =>
+                  onUpdateStatus(String(order.order_id), "SELESAI")
+                }
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status_order === 'SELESAI'
-                    ? 'bg-[#677E61] text-white border-emerald-600'
-                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  order.status_order === "SELESAI"
+                    ? "bg-[#677E61] text-white border-emerald-600"
+                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 Selesai
@@ -162,11 +222,14 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
 
               <button
                 onClick={() => onCancelOrder(String(order.order_id))}
-                disabled={order.status_order === 'BATAL' || order.status_order === 'SELESAI'}
+                disabled={
+                  order.status_order === "BATAL" ||
+                  order.status_order === "SELESAI"
+                }
                 className={`py-2 px-1 rounded-xl text-xs font-bold transition-all border ${
-                  order.status_order === 'BATAL'
-                    ? 'bg-rose-600 text-white border-rose-600'
-                    : 'bg-slate-50 text-rose-700 border-rose-200 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed'
+                  order.status_order === "BATAL"
+                    ? "bg-rose-600 text-white border-rose-600"
+                    : "bg-slate-50 text-rose-700 border-rose-200 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 }`}
               >
                 Batalkan

@@ -27,7 +27,7 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsedStok = parseInt(stok, 10);
+    const parsedStok = stok === '' ? 0 : parseInt(stok, 10);
     if (!isNaN(parsedStok) && parsedStok >= 0) {
       onUpdate(menuItem.menu_id, parsedStok);
       onClose();
@@ -81,7 +81,6 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
           <button
             type="submit"
             form="update-stock-form"
-            disabled={stok === ''}
             className="px-4 py-2 text-xs font-bold text-white bg-[#BD4444] rounded-xl hover:bg-[#a13838] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
             <Check className="w-3.5 h-3.5" />

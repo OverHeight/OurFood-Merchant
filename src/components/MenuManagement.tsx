@@ -30,6 +30,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
 
   // Derive categories dynamically from menu items
   const dynamicCategories = Array.from(
@@ -151,11 +152,7 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Hapus menu "${item.nama_menu}"?`)) {
-                        onDeleteMenu(String(item.menu_id));
-                      }
-                    }}
+                    onClick={() => setItemToDelete(item)}
                     className="text-[10px] font-bold text-rose-600 hover:text-white bg-rose-100 hover:bg-rose-600 px-2 py-0.5 rounded transition-colors flex items-center gap-1"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -223,6 +220,37 @@ export const MenuManagement: React.FC<MenuManagementProps> = ({
           </div>
         ))}
       </div>
+      {/* Delete Confirmation Modal */}
+      {itemToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-center text-slate-800 mb-2">Hapus Menu?</h3>
+            <p className="text-center text-slate-500 text-sm mb-6">
+              Apakah Anda yakin ingin menghapus <span className="font-bold text-slate-700">"{itemToDelete.nama_menu}"</span>? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setItemToDelete(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  onDeleteMenu(String(itemToDelete.menu_id));
+                  setItemToDelete(null);
+                }}
+                className="flex-1 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-lg shadow-rose-500/30 transition-all"
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

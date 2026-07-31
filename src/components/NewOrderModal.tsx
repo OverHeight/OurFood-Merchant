@@ -19,9 +19,6 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
 
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [deliveryType, setDeliveryType] = useState<
-    "Takeaway" | "Delivery" | "Dine-In"
-  >("Takeaway");
   const [address, setAddress] = useState("");
   const [paymentStatus, setPaymentStatus] =
     useState<PaymentStatus>("SUDAH_BAYAR");
@@ -95,7 +92,6 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
       status_order: "DISIAPKAN",
       paymentStatus,
       waktu_checkout: now.toISOString(),
-      deliveryType,
       alamat_pengantaran: address.trim() || undefined,
     };
 
@@ -107,6 +103,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
     setCustomerPhone("");
     setSelectedCart([]);
     setAddress("");
+    setPaymentStatus("SUDAH_BAYAR");
   };
 
   return (

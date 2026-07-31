@@ -1,14 +1,15 @@
 export type OrderStatus =
-  | 'DISIAPKAN'
-  | 'SEDANG_DIMASAK'
-  | 'SIAP_DIANTAR'
-  | 'DIANTAR'
-  | 'SELESAI'
-  | 'BATAL';
+  | "DISIAPKAN"
+  | "SEDANG_DIMASAK"
+  | "SIAP_DIANTAR"
+  | "DIANTAR"
+  | "SELESAI"
+  | "BATAL";
 
-export type PaymentStatus = 'SUDAH_BAYAR' | 'BELUM_BAYAR' | 'REFUNDED';
+export type PaymentStatus = "SUDAH_BAYAR" | "BELUM_BAYAR" | "REFUNDED";
+export type CustomerType = "walk-in" | "member" | "guest";
 
-export type StoreStatus = 'BUKA' | 'TUTUP' | 'TIDAK_MENERIMA';
+export type StoreStatus = "BUKA" | "TUTUP" | "TIDAK_MENERIMA";
 
 export interface OrderItem {
   order_item_id: number | string;
@@ -34,7 +35,8 @@ export interface Order {
   no_hp?: string;
   // UI additions
   paymentStatus?: PaymentStatus;
-  deliveryType?: 'Takeaway' | 'Delivery' | 'Dine-In';
+  deliveryType?: "Takeaway" | "Delivery" | "Dine-In";
+  customerType?: CustomerType;
   items: OrderItem[];
   cancelReason?: string;
 }
@@ -100,6 +102,15 @@ export interface Review {
   dibalas?: boolean;
 }
 
+export interface OrderNotification {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  orderId: string;
+  type: "new-order" | "order-updated";
+}
+
 export interface DriverRequest {
   request_id: string;
   order_id: string;
@@ -111,4 +122,11 @@ export interface DriverRequest {
   expires_at: number; // timestamp ms
 }
 
-export type NavTab = 'dashboard' | 'menu' | 'orders' | 'reports' | 'profile' | 'maps' | 'reviews';
+export type NavTab =
+  | "dashboard"
+  | "menu"
+  | "orders"
+  | "reports"
+  | "profile"
+  | "maps"
+  | "reviews";

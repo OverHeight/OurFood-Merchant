@@ -73,6 +73,7 @@ export default function MerchantApp() {
   const {
     activeOrders,
     historyOrders,
+    notifications,
     addOrder,
     handleUpdateOrderStatus,
     cancelOrder,
@@ -168,7 +169,8 @@ export default function MerchantApp() {
           onSelectTab={setCurrentTab}
           onOpenMobileSidebar={() => setIsOpenMobileSidebar(true)}
           merchantProfile={merchantProfile}
-          unreadCount={activeOrders.length}
+          unreadCount={notifications.length}
+          notifications={notifications}
         />
         {notification && (
           <div className="fixed top-6 right-6 z-50 w-[320px] rounded-3xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-opacity duration-200">
@@ -192,7 +194,7 @@ export default function MerchantApp() {
         )}
 
         {/* Main Workspace Body */}
-        <main className="flex-1 pt-6 pb-16 px-4 md:px-8 max-w-[1440px] w-full mx-auto">
+        <main className="flex-1 pt-6 pb-16 px-4 md:px-8 max-w-[90rem] w-full mx-auto">
           {currentTab === "dashboard" && (
             <div className="flex flex-col lg:flex-row gap-6">
               {/* Left Column (70%) */}
