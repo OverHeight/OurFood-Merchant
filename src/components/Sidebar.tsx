@@ -56,7 +56,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsedDesktop,
   onToggleCollapseDesktop,
 }) => {
-  const statusConfig = STORE_STATUS_CONFIG[merchantProfile.storeStatus];
+  const currentStatus = merchantProfile?.storeStatus || 'BUKA';
+  const statusConfig = STORE_STATUS_CONFIG[currentStatus] || STORE_STATUS_CONFIG['BUKA'];
 
   const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -93,9 +94,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           <div className="h-16 px-4 flex items-center justify-between border-b border-slate-100">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-10 h-10 rounded-xl bg-[#BD4444] flex items-center justify-center text-white shrink-0 shadow-md shadow-[#BD4444]/20">
-                <Store className="w-5 h-5" />
-              </div>
+              <img
+                src="/assets/logo.png"
+                alt="OurFood Logo"
+                className="w-10 h-10 object-contain shrink-0 rounded-xl"
+              />
               {(!isCollapsedDesktop || isOpenMobile) && (
                 <div className="flex flex-col truncate">
                   <span className="font-bold text-slate-900 leading-tight text-base truncate">

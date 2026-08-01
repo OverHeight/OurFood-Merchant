@@ -33,8 +33,9 @@ interface HeaderProps {
   onSelectTab: (tab: NavTab) => void;
   onOpenMobileSidebar: () => void;
   merchantProfile: MerchantProfile;
-  unreadCount: number;
+  unreadCount?: number;
   notifications: OrderNotification[];
+  onToggleStoreStatus?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -42,10 +43,11 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectTab,
   onOpenMobileSidebar,
   merchantProfile,
-  unreadCount,
   notifications,
+  onToggleStoreStatus,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const unreadCount = notifications.length;
 
   return (
     <header className="sticky top-0 z-30 w-full h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs px-4 md:px-8 flex items-center justify-between">
@@ -70,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Middle Top Nav Links (Matching provided HTML design) */}
-      <nav className="hidden md:flex items-center gap-6">
+      {/* <nav className="hidden md:flex items-center gap-6">
         <button
           onClick={() => onSelectTab("dashboard")}
           className={`text-sm font-semibold transition-all py-1 ${
@@ -101,13 +103,14 @@ export const Header: React.FC<HeaderProps> = ({
         >
           Ulasan
         </button>
-      </nav>
+      </nav> */}
 
       {/* Right: Notifications & Profile */}
       <div className="flex items-center gap-3">
         {/* Store Status Chip — Dynamic 3-state */}
         {(() => {
-          const chip = STORE_STATUS_CHIP[merchantProfile.storeStatus];
+          const currentStatus = merchantProfile?.storeStatus || 'BUKA';
+          const chip = STORE_STATUS_CHIP[currentStatus] || STORE_STATUS_CHIP['BUKA'];
           return (
             <div
               className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${chip.cls}`}

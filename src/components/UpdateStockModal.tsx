@@ -19,7 +19,7 @@ export const UpdateStockModal: React.FC<UpdateStockModalProps> = ({
 
   useEffect(() => {
     if (menuItem) {
-      setStok(menuItem.stok.toString());
+      setStok((menuItem.stok ?? 0).toString());
     }
   }, [menuItem]);
 

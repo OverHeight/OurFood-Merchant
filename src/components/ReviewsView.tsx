@@ -39,9 +39,11 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
     filterRating === 'semua' ? true : r.rating === filterRating
   );
 
-  const formatTime = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return 'Baru saja';
+    const d = new Date(timeStr);
+    if (isNaN(d.getTime())) return timeStr;
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   return (
@@ -81,7 +83,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
               <button
                 key={star}
                 onClick={() => setFilterRating(filterRating === star ? 'semua' : star)}
-                className={`w-full flex items-center gap-2 group transition-all rounded-lg px-1 py-0.5 ${filterRating === star ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
+                className={`w-full flex items-center gap-2 group transition-all rounded-lg px-1 py-0.5 cursor-pointer ${filterRating === star ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
               >
                 <span className="text-xs font-bold text-slate-700 w-3">{star}</span>
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
@@ -103,7 +105,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
             </p>
             <button
               onClick={() => setFilterRating('semua')}
-              className={`w-full py-1.5 rounded-lg text-xs font-bold transition-all ${filterRating === 'semua' ? 'bg-[#BD4444] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              className={`w-full py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${filterRating === 'semua' ? 'bg-[#BD4444] text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
             >
               Semua ({reviews.length})
             </button>
@@ -115,7 +117,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
           {filtered.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200/80 p-12 text-center text-slate-400">
               <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-30" />
-              <p className="text-sm font-medium">Tidak ada ulasan untuk filter ini.</p>
+              <p className="text-sm font-medium">Belum ada ulasan untuk filter ini.</p>
             </div>
           ) : (
             filtered.map((review) => (
@@ -125,7 +127,7 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
               >
                 <div className="flex items-start gap-3">
                   <img
-                    src={review.avatar_url || `https://i.pravatar.cc/150?u=${review.review_id}`}
+                    src={review.avatar_url || review.img_url || `https://i.pravatar.cc/150?u=${review.review_id}`}
                     alt={review.nama_pelanggan}
                     className="w-10 h-10 rounded-full object-cover ring-2 ring-slate-100 shrink-0"
                   />
@@ -147,11 +149,13 @@ export const ReviewsView: React.FC<ReviewsViewProps> = ({ reviews }) => {
 
                     <p className="text-xs text-slate-700 mt-2 leading-relaxed">{review.komentar}</p>
 
-                    <div className="mt-2">
-                      <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">
-                        Menu: {review.nama_menu}
-                      </span>
-                    </div>
+                    {review.nama_menu && (
+                      <div className="mt-2">
+                        <span className="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg font-medium">
+                          Menu: {review.nama_menu}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

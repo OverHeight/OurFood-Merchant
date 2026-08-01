@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Order, OrderStatus } from '../types';
-import { ClipboardList, Search, Filter, ChevronRight, Eye } from 'lucide-react';
+import { ClipboardList, Search, Eye } from 'lucide-react';
 
 interface OrdersListViewProps {
   orders: Order[];
@@ -11,7 +11,6 @@ interface OrdersListViewProps {
 export const OrdersListView: React.FC<OrdersListViewProps> = ({
   orders,
   onSelectOrder,
-  onUpdateStatus,
 }) => {
   const [filterTab, setFilterTab] = useState<'semua' | 'aktif' | 'selesai' | 'batal'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,34 +23,46 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
     if (filterTab === 'aktif') {
       return (
         matchesSearch &&
-        (order.status_order === 'DISIAPKAN' ||
-          order.status_order === 'SEDANG_DIMASAK' ||
-          order.status_order === 'SIAP_DIANTAR' ||
-          order.status_order === 'DIANTAR')
+        order.status_order !== 'DELIVERED' &&
+        order.status_order !== 'CANCELLED_BY_MERCHANT' &&
+        order.status_order !== 'CANCELLED_BY_USER' &&
+        order.status_order !== 'DELIVERY_FAILED'
       );
     }
     if (filterTab === 'selesai') {
-      return matchesSearch && order.status_order === 'SELESAI';
+      return matchesSearch && order.status_order === 'DELIVERED';
     }
     if (filterTab === 'batal') {
-      return matchesSearch && order.status_order === 'BATAL';
+      return (
+        matchesSearch &&
+        (order.status_order === 'CANCELLED_BY_MERCHANT' ||
+          order.status_order === 'CANCELLED_BY_USER' ||
+          order.status_order === 'DELIVERY_FAILED')
+      );
     }
     return matchesSearch;
   });
 
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
-      case 'SELESAI':
-        return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">Selesai</span>;
-      case 'SEDANG_DIMASAK':
+      case 'DELIVERED':
+        return <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">Selesai</span>;
+      case 'PREPARING':
         return <span className="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Sedang Dimasak</span>;
-      case 'SIAP_DIANTAR':
-      case 'DIANTAR':
-        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">Diantar</span>;
-      case 'DISIAPKAN':
-        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-full text-xs font-bold">Disiapkan</span>;
-      case 'BATAL':
-        return <span className="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold">Dibatalkan</span>;
+      case 'READY_FOR_PICKUP':
+        return <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-bold">Siap Diantar</span>;
+      case 'ON_THE_WAY':
+        return <span className="px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-full text-xs font-bold">Sedang Diantar</span>;
+      case 'WAITING_MERCHANT':
+        return <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">Menunggu Konfirmasi</span>;
+      case 'CANCELLED_BY_MERCHANT':
+        return <span className="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold">Dibatalkan Merchant</span>;
+      case 'CANCELLED_BY_USER':
+        return <span className="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-full text-xs font-bold">Dibatalkan User</span>;
+      case 'DELIVERY_FAILED':
+        return <span className="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-full text-xs font-bold">Gagal Diantar</span>;
+      default:
+        return <span className="px-2.5 py-1 bg-slate-100 text-slate-800 rounded-full text-xs font-bold">{status}</span>;
     }
   };
 
@@ -86,7 +97,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         <button
           onClick={() => setFilterTab('semua')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
             filterTab === 'semua'
               ? 'bg-[#BD4444] text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -96,7 +107,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
         </button>
         <button
           onClick={() => setFilterTab('aktif')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
             filterTab === 'aktif'
               ? 'bg-amber-500 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -106,7 +117,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
         </button>
         <button
           onClick={() => setFilterTab('selesai')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
             filterTab === 'selesai'
               ? 'bg-[#677E61] text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -116,7 +127,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
         </button>
         <button
           onClick={() => setFilterTab('batal')}
-          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
+          className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
             filterTab === 'batal'
               ? 'bg-rose-600 text-white shadow-xs'
               : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
@@ -158,7 +169,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                       <td className="py-3.5 px-4 font-bold text-[#BD4444]">
                         {order.order_id}
                         <span className="block text-[10px] text-slate-400 font-normal">
-                          {order.waktu_checkout}
+                          {order.waktu_checkout ? new Date(order.waktu_checkout).toLocaleString('id-ID') : ''}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-slate-900">
@@ -174,7 +185,7 @@ export const OrdersListView: React.FC<OrdersListViewProps> = ({
                       <td className="py-3.5 px-4 text-right">
                         <button
                           onClick={() => onSelectOrder(order)}
-                          className="px-3 py-1.5 bg-[#F1DEC4] hover:bg-[#e0ceb5] text-[#BD4444] border border-[#e0ceb5] font-bold rounded-lg transition-all inline-flex items-center gap-1"
+                          className="px-3 py-1.5 bg-[#F1DEC4] hover:bg-[#e0ceb5] text-[#BD4444] border border-[#e0ceb5] font-bold rounded-lg transition-all inline-flex items-center gap-1 cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5" /> Detail
                         </button>

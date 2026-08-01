@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MerchantProfile, StoreStatus } from '../types';
 import { Store, Save, Power, CheckCircle } from 'lucide-react';
+import { OsmLocationPicker } from './OsmLocationPicker';
 
 interface ProfileViewProps {
   merchantProfile: MerchantProfile;
@@ -90,14 +91,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="text"
               value={formData.alamat}
               onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none mb-4"
+            />
+
+            {/* Interactive OpenStreetMap Location Pinpoint Picker */}
+            <OsmLocationPicker
+              latitude={formData.latitude || -6.8868}
+              longitude={formData.longitude || 107.6153}
+              onChange={(newLat, newLon) =>
+                setFormData({ ...formData, latitude: newLat, longitude: newLon })
+              }
             />
           </div>
 
-          <div className="pt-4 flex justify-end">
+          <div className="pt-4 flex justify-between items-center border-t border-slate-100 mt-6">
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("merchantId");
+                localStorage.removeItem("isAuthenticated");
+                window.location.href = "/";
+              }}
+              className="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <Power className="w-4 h-4" />
+              <span>Keluar dari Akun</span>
+            </button>
+
             <button
               type="submit"
-              className="px-5 py-2.5 bg-[#BD4444] hover:bg-[#a13838] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2"
+              className="px-5 py-2.5 bg-[#BD4444] hover:bg-[#a13838] text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Simpan Perubahan</span>

@@ -5,80 +5,52 @@ import {
   OrderStatus,
   PaymentStatus,
   OrderNotification,
+  DriverInfo,
+  UserAddress,
 } from "../types";
 import {
   fetchOrdersByMerchant,
   updateOrderStatus,
   createOrder,
+  createTransaction,
+  updateTransactionStatus,
 } from "../services/orderService";
 import { decrementMenuStock } from "../services/menuService";
-import { supabase, CURRENT_MERCHANT_ID } from "../lib/supabase";
+import { supabase, getMerchantId } from "../lib/supabase";
 import {
   DbOrder,
-  DbOrderWithRelations,
   DbOrderInsert,
   DbOrderItemInsert,
   DbTransactionInsert,
 } from "../lib/database.types";
 
-export function mapStatusFromDb(dbStatus: string | null): OrderStatus {
-  switch (dbStatus?.toLowerCase()) {
-    case 'pending': return 'DISIAPKAN';
-    case 'diproses': return 'SEDANG_DIMASAK';
-    case 'menunggu_driver': return 'SIAP_DIANTAR';
-    case 'diantar': return 'DIANTAR';
-    case 'selesai': return 'SELESAI';
-    case 'dibatalkan': return 'BATAL';
-    default: return dbStatus as OrderStatus || 'DISIAPKAN';
-  }
-}
+export function normalizePaymentStatus(value?: string | null): PaymentStatus {
+  const normalized = value?.trim().toUpperCase();
 
-export function mapStatusToDb(feStatus: OrderStatus): string {
-  switch (feStatus) {
-    case 'DISIAPKAN': return 'pending';
-    case 'SEDANG_DIMASAK': return 'diproses';
-    case 'SIAP_DIANTAR': return 'menunggu_driver';
-    case 'DIANTAR': return 'diantar';
-    case 'SELESAI': return 'selesai';
-    case 'BATAL': return 'dibatalkan';
-    default: return feStatus;
+  if (
+    normalized === "SUDAH_BAYAR" ||
+    normalized === "LUNAS" ||
+    normalized === "PAID" ||
+    normalized === "SETTLED" ||
+    normalized === "SUCCESS"
+  ) {
+    return "SUDAH_BAYAR";
   }
-}
 
+  if (normalized === "REFUNDED" || normalized === "REFUND") {
+    return "REFUNDED";
+  }
+
+  return "BELUM_BAYAR";
+}
 
 export function useOrders() {
   const [activeOrders, setActiveOrders] = useState<Order[]>([]);
   const [historyOrders, setHistoryOrders] = useState<Order[]>([]);
   const [notifications, setNotifications] = useState<OrderNotification[]>([]);
-  const [orderMetaById, setOrderMetaById] = useState<
-    Record<
-      string,
-      {
-        deliveryType?: Order["deliveryType"];
-        paymentStatus?: PaymentStatus;
-        customerType?: Order["customerType"];
-      }
-    >
-  >({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const normalizePaymentStatus = (value?: string | null): PaymentStatus => {
-    const normalized = value?.trim().toUpperCase();
-
-    if (
-      normalized === "SUDAH_BAYAR" ||
-      normalized === "LUNAS" ||
-      normalized === "PAID"
-    ) {
-      return "SUDAH_BAYAR";
-    }
-
-    if (normalized === "REFUNDED" || normalized === "REFUND") {
-      return "REFUNDED";
-    }
-
-    return "BELUM_BAYAR";
-  };
+  const merchantId = getMerchantId();
 
   const pushNotification = (
     orderId: string | number,
@@ -102,31 +74,28 @@ export function useOrders() {
     setNotifications((prev) => [notification, ...prev].slice(0, 8));
   };
 
-  const applyOrderMeta = (order: Order): Order => {
-    const meta = orderMetaById[String(order.order_id)];
-    if (!meta) return order;
-
-    return {
-      ...order,
-      deliveryType: meta.deliveryType ?? order.deliveryType,
-      paymentStatus: meta.paymentStatus ?? order.paymentStatus,
-      customerType: meta.customerType ?? order.customerType,
-    };
-  };
-
   const loadOrders = async () => {
     setIsLoading(true);
-    const dbOrders = await fetchOrdersByMerchant(CURRENT_MERCHANT_ID);
+    const dbOrders = await fetchOrdersByMerchant(merchantId);
 
     const transformedOrders: Order[] = dbOrders.map((dbOrder) =>
-      applyOrderMeta(mapDbOrderToFrontend(dbOrder)),
+      mapDbOrderToFrontend(dbOrder),
     );
 
     const active = transformedOrders.filter(
-      (o) => o.status_order !== "SELESAI" && o.status_order !== "BATAL",
+      (o) =>
+        o.status_order !== "DELIVERED" &&
+        o.status_order !== "CANCELLED_BY_MERCHANT" &&
+        o.status_order !== "CANCELLED_BY_USER" &&
+        o.status_order !== "DELIVERY_FAILED",
     );
+
     const history = transformedOrders.filter(
-      (o) => o.status_order === "SELESAI" || o.status_order === "BATAL",
+      (o) =>
+        o.status_order === "DELIVERED" ||
+        o.status_order === "CANCELLED_BY_MERCHANT" ||
+        o.status_order === "CANCELLED_BY_USER" ||
+        o.status_order === "DELIVERY_FAILED",
     );
 
     setActiveOrders(active);
@@ -138,108 +107,143 @@ export function useOrders() {
     loadOrders();
 
     const channel = supabase
-      .channel(`merchant-orders-${CURRENT_MERCHANT_ID}`)
+      .channel(`merchant-orders-live-${merchantId}`)
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "orders",
-          filter: `merchant_id=eq.${CURRENT_MERCHANT_ID}`,
         },
         (payload) => {
-          const insertedOrder = payload.new as DbOrder;
-          pushNotification(
-            insertedOrder.order_id,
-            "Pesanan Baru Masuk!",
-            `Order ${insertedOrder.order_id} sedang menunggu diproses.`,
-            "new-order",
-          );
-          loadOrders();
+          const newOrder = payload.new as any;
+          if (!newOrder || !newOrder.merchant_id || newOrder.merchant_id === merchantId) {
+            if (payload.eventType === "INSERT") {
+              pushNotification(
+                newOrder?.order_id || "NEW",
+                "Pesanan Baru Masuk!",
+                `Pesanan baru sedang menunggu konfirmasi merchant.`,
+                "new-order",
+              );
+            }
+            // Trigger loadOrders immediately and after brief delay for relations
+            loadOrders();
+            setTimeout(() => {
+              loadOrders();
+            }, 400);
+          }
         },
       )
       .on(
         "postgres_changes",
         {
-          event: "UPDATE",
+          event: "*",
           schema: "public",
-          table: "orders",
-          filter: `merchant_id=eq.${CURRENT_MERCHANT_ID}`,
+          table: "order_item",
         },
         () => {
-          loadOrders();
+          setTimeout(() => {
+            loadOrders();
+          }, 300);
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[Realtime Channel orders] Status:`, status);
+        if (err) console.error(`[Realtime Channel error]:`, err);
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [merchantId]);
 
   const handleUpdateOrderStatus = async (
     orderId: string | number,
     newStatus: OrderStatus,
+    alasanBatal?: string,
   ) => {
     const stringOrderId = String(orderId);
 
-    let orderToMove: Order | undefined;
+    // Optimistic UI Update
+    setActiveOrders((prevActive) => {
+      const target = prevActive.find((o) => String(o.order_id) === stringOrderId);
+      if (!target) return prevActive;
 
-    const activeIndex = activeOrders.findIndex(
-      (o) => String(o.order_id) === stringOrderId,
-    );
-    if (activeIndex >= 0) {
-      orderToMove = { ...activeOrders[activeIndex], status_order: newStatus };
-      const newActive = [...activeOrders];
+      const isBecomingHistory =
+        newStatus === "DELIVERED" ||
+        newStatus === "CANCELLED_BY_MERCHANT" ||
+        newStatus === "CANCELLED_BY_USER" ||
+        newStatus === "DELIVERY_FAILED";
 
-      if (newStatus === "SELESAI" || newStatus === "BATAL") {
-        newActive.splice(activeIndex, 1);
-        setActiveOrders(newActive);
-        setHistoryOrders((prev) => [orderToMove!, ...prev]);
-      } else {
-        newActive[activeIndex] = orderToMove;
-        setActiveOrders(newActive);
+      if (isBecomingHistory) {
+        setHistoryOrders((prevHist) => [
+          { ...target, status_order: newStatus, cancelReason: alasanBatal || target.cancelReason },
+          ...prevHist,
+        ]);
+        return prevActive.filter((o) => String(o.order_id) !== stringOrderId);
       }
-    } else {
-      const historyIndex = historyOrders.findIndex(
-        (o) => String(o.order_id) === stringOrderId,
-      );
-      if (historyIndex >= 0) {
-        orderToMove = {
-          ...historyOrders[historyIndex],
-          status_order: newStatus,
-        };
-        const newHistory = [...historyOrders];
 
-        if (newStatus !== "SELESAI" && newStatus !== "BATAL") {
-          newHistory.splice(historyIndex, 1);
-          setHistoryOrders(newHistory);
-          setActiveOrders((prev) => [orderToMove!, ...prev]);
-        } else {
-          newHistory[historyIndex] = orderToMove;
-          setHistoryOrders(newHistory);
+      return prevActive.map((o) =>
+        String(o.order_id) === stringOrderId ? { ...o, status_order: newStatus } : o,
+      );
+    });
+
+    // DB Update
+    const success = await updateOrderStatus(stringOrderId, newStatus);
+
+    if (success) {
+      // Task 5: When merchant accepts order (PREPARING), create a transaction record
+      if (newStatus === "PREPARING") {
+        const orderObj = [...activeOrders, ...historyOrders].find(
+          (o) => String(o.order_id) === stringOrderId,
+        );
+        await createTransaction({
+          order_id: stringOrderId,
+          user_id: orderObj?.user_id || null,
+          merchant_id: merchantId,
+          driver_id: orderObj?.driver_id || null,
+          total_harga: orderObj?.total_harga || 0,
+        });
+
+        // Decrement menu stock for each item in accepted order
+        if (orderObj && orderObj.items) {
+          await Promise.all(
+            orderObj.items.map((item) =>
+              decrementMenuStock(String(item.menu_id), item.jumlah)
+            )
+          );
         }
       }
-    }
 
-    await updateOrderStatus(stringOrderId, mapStatusToDb(newStatus));
+      // When DELIVERED, set transaction status to SUCCESS
+      if (newStatus === "DELIVERED") {
+        await updateTransactionStatus(stringOrderId, "SUCCESS");
+      }
+    } else {
+      await loadOrders(); // Revert on failure
+    }
   };
 
   const cancelOrder = async (orderId: string | number, reason: string) => {
-    await handleUpdateOrderStatus(orderId, "BATAL");
+    const stringOrderId = String(orderId);
+    await supabase
+      .from("orders")
+      .update({ status_order: "CANCELLED_BY_MERCHANT", alasan_batal: reason })
+      .eq("order_id", stringOrderId);
+
+    await loadOrders();
   };
 
   const addOrder = async (newOrder: Order) => {
     const dbOrderPayload: DbOrderInsert = {
-      merchant_id: CURRENT_MERCHANT_ID,
-      alamat_pengantaran: newOrder.alamat_pengantaran,
-      status_order: mapStatusToDb(newOrder.status_order),
+      merchant_id: merchantId,
+      status_order: newOrder.status_order || "WAITING_MERCHANT",
       total_harga: newOrder.total_harga,
-      waktu_checkout: newOrder.waktu_checkout,
-      latitude_pengantaran: null,
-      longitude_pengantaran: null,
-      user_id: null,
+      waktu_checkout: newOrder.waktu_checkout || new Date().toISOString(),
+      user_id: newOrder.user_id || null,
       driver_id: null,
+      alasan_batal: null,
+      id_alamat: newOrder.id_alamat || null,
     };
 
     const dbItemsPayload: Omit<DbOrderItemInsert, "order_id">[] =
@@ -251,12 +255,14 @@ export function useOrders() {
       }));
 
     const dbTransactionPayload: Omit<DbTransactionInsert, "order_id"> = {
-      payment_type: "CASH",
+      user_id: newOrder.user_id || null,
+      merchant_id: merchantId,
+      tipe_pembayaran: "CASH",
       biaya_antar: 0,
       subtotal: newOrder.total_harga,
       diskon: 0,
       pajak: 0,
-      status_transaksi: newOrder.paymentStatus || "BELUM_BAYAR",
+      status_transaksi: "PENDING",
       total_harga: newOrder.total_harga,
     };
 
@@ -267,17 +273,6 @@ export function useOrders() {
     );
 
     if (created) {
-      const customerType = newOrder.customerType ?? "walk-in";
-      const paymentStatus = normalizePaymentStatus(newOrder.paymentStatus);
-      setOrderMetaById((prev) => ({
-        ...prev,
-        [created.order_id]: {
-          deliveryType: newOrder.deliveryType,
-          paymentStatus,
-          customerType,
-        },
-      }));
-
       pushNotification(
         created.order_id,
         "Pesanan Baru Masuk!",
@@ -310,17 +305,22 @@ export function useOrders() {
 }
 
 function mapDbOrderToFrontend(dbOrder: any): Order {
-  // Handle transaction which could be array or object
   const transaction = Array.isArray(dbOrder.transaction)
     ? dbOrder.transaction[0]
     : dbOrder.transaction || null;
 
-  // Handle user_profile which could be array or object
   const userProfile = Array.isArray(dbOrder.user_profile)
     ? dbOrder.user_profile[0]
     : dbOrder.user_profile || null;
 
-  // Handle order_item which could be array or object
+  const userAddressObj: UserAddress | null = Array.isArray(dbOrder.user_address)
+    ? dbOrder.user_address[0]
+    : dbOrder.user_address || null;
+
+  const driverObj: DriverInfo | null = Array.isArray(dbOrder.driver)
+    ? dbOrder.driver[0]
+    : dbOrder.driver || null;
+
   const itemsArray = Array.isArray(dbOrder.order_item)
     ? dbOrder.order_item
     : dbOrder.order_item
@@ -335,25 +335,47 @@ function mapDbOrderToFrontend(dbOrder: any): Order {
       jumlah: item.jumlah,
       harga_saat_itu: item.harga_saat_itu,
       subtotal: item.subtotal,
-      nama_menu: menuObj?.nama_menu || "Unknown Menu",
+      nama_menu: menuObj?.nama_menu || "Menu",
+      image_url: menuObj?.image_url || undefined,
       icon: menuObj?.image_url || undefined,
     };
   });
 
+  const deliveryAddressString =
+    userAddressObj?.alamat ||
+    (userAddressObj?.catatan ? `${userAddressObj.nama} (${userAddressObj.catatan})` : "Di Resto");
+
   return {
     order_id: dbOrder.order_id,
-    alamat_pengantaran: dbOrder.alamat_pengantaran || "Di Resto",
-    status_order: mapStatusFromDb(dbOrder.status_order),
-    total_harga: dbOrder.total_harga,
-    waktu_checkout: dbOrder.waktu_checkout,
-    user_id: dbOrder.user_id || undefined,
-    nama: userProfile?.nama || "Pelanggan Walk-in",
-    no_hp: userProfile?.no_hp || "-",
+    merchant_id: dbOrder.merchant_id,
+    user_id: dbOrder.user_id,
+    driver_id: dbOrder.driver_id,
+    id_alamat: dbOrder.id_alamat,
+    alamat_pengantaran: deliveryAddressString,
+    user_address: userAddressObj,
+    status_order: dbOrder.status_order as OrderStatus,
+    total_harga: dbOrder.total_harga || 0,
+    waktu_checkout: dbOrder.waktu_checkout || new Date().toISOString(),
+    nama: userAddressObj?.nama_penerima || userProfile?.nama || "Pelanggan",
+    no_hp: userAddressObj?.no_telp || userProfile?.no_hp || "-",
     paymentStatus: normalizePaymentStatus(
       transaction?.status_transaksi as string | null,
     ),
-    deliveryType: dbOrder.alamat_pengantaran ? "Delivery" : "Takeaway",
+    deliveryType: dbOrder.id_alamat ? "Delivery" : "Takeaway",
     customerType: dbOrder.user_id ? "member" : "walk-in",
     items: mappedItems,
+    cancelReason: dbOrder.alasan_batal || undefined,
+    driver: driverObj
+      ? {
+          driver_id: driverObj.driver_id,
+          nama: driverObj.nama,
+          no_hp: driverObj.no_hp,
+          plat_nomor: driverObj.plat_nomor,
+          jenis_kendaraan: driverObj.jenis_kendaraan,
+          latitude: driverObj.latitude,
+          longitude: driverObj.longitude,
+          status_driver: driverObj.status_driver,
+        }
+      : null,
   };
 }

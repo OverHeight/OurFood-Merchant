@@ -13,7 +13,9 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
   onSelectOrder,
   onViewAllHistory,
 }) => {
-  const [lastUpdated, setLastUpdated] = useState('14:30 WIB');
+  const [lastUpdated, setLastUpdated] = useState(
+    new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+  );
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = () => {
@@ -28,27 +30,15 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
 
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
-      case 'SELESAI':
+      case 'DELIVERED':
         return (
-          <span className="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-[10px] font-bold uppercase tracking-wider">
+          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase tracking-wider">
             Selesai
           </span>
         );
-      case 'DIANTAR':
-      case 'SIAP_DIANTAR':
-        return (
-          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold uppercase tracking-wider">
-            Diantar
-          </span>
-        );
-      case 'DISIAPKAN':
-      case 'SEDANG_DIMASAK':
-        return (
-          <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[10px] font-bold uppercase tracking-wider">
-            Disiapkan
-          </span>
-        );
-      case 'BATAL':
+      case 'CANCELLED_BY_MERCHANT':
+      case 'CANCELLED_BY_USER':
+      case 'DELIVERY_FAILED':
         return (
           <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded text-[10px] font-bold uppercase tracking-wider">
             Batal
@@ -63,11 +53,11 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
     }
   };
 
-  const getPaymentBadge = (status: PaymentStatus) => {
+  const getPaymentBadge = (status?: PaymentStatus) => {
     switch (status) {
       case 'SUDAH_BAYAR':
         return (
-          <span className="px-2 py-0.5 bg-emerald-100 text-[#BD4444] rounded text-[10px] font-bold uppercase tracking-wider">
+          <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded text-[10px] font-bold uppercase tracking-wider">
             Sudah Bayar
           </span>
         );
@@ -83,6 +73,8 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
             Refunded
           </span>
         );
+      default:
+        return null;
     }
   };
 
@@ -105,7 +97,7 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
 
           <button
             onClick={handleRefresh}
-            className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all ${
+            className={`p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all cursor-pointer ${
               isRefreshing ? 'animate-spin text-[#BD4444]' : ''
             }`}
             title="Perbarui Data"
@@ -116,34 +108,42 @@ export const OrderHistorySidebar: React.FC<OrderHistorySidebarProps> = ({
 
         {/* History Item List */}
         <div className="flex-grow p-4 space-y-3 overflow-y-auto max-h-[600px]">
-          {historyOrders.map((order) => (
-            <div
-              key={order.order_id}
-              onClick={() => onSelectOrder(order)}
-              className="p-3.5 hover:bg-slate-50/80 transition-all rounded-xl border border-slate-200/60 group cursor-pointer hover:border-emerald-300 shadow-2xs"
-            >
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-bold text-slate-700">Order Id</span>
-                <span className="text-xs text-slate-400 font-medium">{order.waktu_checkout}</span>
-              </div>
+          {historyOrders.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-8">
+              Belum ada riwayat pesanan.
+            </p>
+          ) : (
+            historyOrders.map((order) => (
+              <div
+                key={order.order_id}
+                onClick={() => onSelectOrder(order)}
+                className="p-3.5 hover:bg-slate-50/80 transition-all rounded-xl border border-slate-200/60 group cursor-pointer hover:border-emerald-300 shadow-2xs"
+              >
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-bold text-slate-700">Order Id</span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {order.waktu_checkout ? new Date(order.waktu_checkout).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : ''}
+                  </span>
+                </div>
 
-              <p className="text-sm font-bold text-[#BD4444] mb-2.5">
-                {order.order_id}
-              </p>
+                <p className="text-sm font-bold text-[#BD4444] mb-2.5">
+                  {order.order_id}
+                </p>
 
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {getStatusBadge(order.status_order)}
-                {getPaymentBadge(order.paymentStatus)}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {getStatusBadge(order.status_order)}
+                  {getPaymentBadge(order.paymentStatus)}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Footer Button */}
         <div className="p-4 border-t border-slate-100">
           <button
             onClick={onViewAllHistory}
-            className="w-full py-3 bg-slate-50 text-[#BD4444] text-xs font-bold rounded-xl border border-[#e0ceb5] hover:bg-[#F1DEC4] transition-all flex items-center justify-center gap-1.5"
+            className="w-full py-3 bg-slate-50 text-[#BD4444] text-xs font-bold rounded-xl border border-[#e0ceb5] hover:bg-[#F1DEC4] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <span>Tampilkan Lebih Banyak</span>
             <ChevronRight className="w-4 h-4" />

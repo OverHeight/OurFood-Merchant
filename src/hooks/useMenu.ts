@@ -5,8 +5,9 @@ import {
   addMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  fetchSalesCountsByMerchant,
 } from "../services/menuService";
-import { CURRENT_MERCHANT_ID } from "../lib/supabase";
+import { getMerchantId } from "../lib/supabase";
 import { fetchKategori } from "../services/kategoriService";
 
 export function useMenu() {
@@ -16,6 +17,8 @@ export function useMenu() {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const merchantId = getMerchantId();
+
   const loadData = async () => {
     setIsLoading(true);
 
@@ -23,14 +26,17 @@ export function useMenu() {
     const kategori = await fetchKategori();
     setKategoriList(kategori);
 
-    // Then load menu items
-    const dbMenu = await fetchMenuByMerchant(CURRENT_MERCHANT_ID);
+    // Fetch menu items and sales count map
+    const [dbMenu, salesMap] = await Promise.all([
+      fetchMenuByMerchant(merchantId),
+      fetchSalesCountsByMerchant(merchantId),
+    ]);
 
     // Transform to frontend format
     const transformedMenu: MenuItem[] = dbMenu.map((dbItem) => ({
       menu_id: dbItem.menu_id,
       merchant_id: dbItem.merchant_id,
-      kategori_id: dbItem.kategori_id,
+      kategori_id: dbItem.kategori_id || undefined,
       nama_menu: dbItem.nama_menu,
       harga: dbItem.harga,
       status_tersedia: dbItem.status_tersedia === "tersedia",
@@ -38,7 +44,7 @@ export function useMenu() {
       category: dbItem.kategori?.nama || "Uncategorized",
       stok: dbItem.stok ?? 0,
       description: dbItem.deskripsi || "",
-      salesCount: 0,
+      salesCount: salesMap[dbItem.menu_id] || 0,
     }));
 
     setMenuItems(transformedMenu);
@@ -47,7 +53,7 @@ export function useMenu() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [merchantId]);
 
   const handleUpdateStock = async (
     menuId: string | number,
@@ -71,7 +77,6 @@ export function useMenu() {
     });
 
     if (!updated) {
-      // Restore current state from DB if saving failed
       await loadData();
     }
   };
@@ -82,7 +87,6 @@ export function useMenu() {
 
     const newStatus = !itemToUpdate.status_tersedia;
 
-    // Optimistic update
     setMenuItems((prev) =>
       prev.map((item) =>
         item.menu_id === menuId
@@ -91,34 +95,33 @@ export function useMenu() {
       ),
     );
 
-    // Send to Supabase
     await updateMenuItem(menuId.toString(), {
       status_tersedia: newStatus ? "tersedia" : "habis",
     });
   };
 
   const handleAddMenu = async (newItem: Omit<MenuItem, "menu_id">) => {
-    // Find category ID based on name, or use first available
     const matchedCategory = kategoriList.find(
       (k) => k.nama === newItem.category,
     );
+    // Fix: if no matching category, set kategori_id to null instead of ""
     const categoryId = matchedCategory
       ? matchedCategory.id
-      : kategoriList[0]?.id || "";
+      : kategoriList[0]?.id || null;
 
     const insertedMenu = await addMenuItem({
-      merchant_id: CURRENT_MERCHANT_ID,
+      merchant_id: merchantId,
       kategori_id: categoryId,
       nama_menu: newItem.nama_menu,
       harga: newItem.harga,
       status_tersedia: newItem.status_tersedia ? "tersedia" : "habis",
       image_url: newItem.image_url || null,
       deskripsi: newItem.description || "",
-      stok: newItem.stok,
+      stok: newItem.stok ?? 0,
     });
 
     if (insertedMenu) {
-      await loadData(); // Reload to get fresh data with joined relations
+      await loadData();
     }
   };
 
@@ -126,14 +129,12 @@ export function useMenu() {
     menuId: string | number,
     updatedData: Partial<MenuItem>,
   ) => {
-    // Optimistic update locally
     setMenuItems((prev) =>
       prev.map((item) =>
         item.menu_id === menuId ? { ...item, ...updatedData } : item,
       ),
     );
 
-    // Prepare Supabase update payload
     const payload: any = {};
     if (updatedData.nama_menu !== undefined)
       payload.nama_menu = updatedData.nama_menu;
@@ -147,7 +148,6 @@ export function useMenu() {
     if (updatedData.description !== undefined)
       payload.deskripsi = updatedData.description;
 
-    // If category changed, we need to map to kategori_id
     if (updatedData.category !== undefined) {
       const matchedCategory = kategoriList.find(
         (k) => k.nama === updatedData.category,

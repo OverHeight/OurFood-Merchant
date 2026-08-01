@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { NavTab, OrderStatus, MenuItem, StoreStatus } from "../types";
-import { INITIAL_REVIEWS } from "../data/mockData";
+import React, { useState, useEffect } from "react";
+import { NavTab, OrderStatus, MenuItem, StoreStatus, Review } from "../types";
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { StatCardsRow } from "../components/StatCardsRow";
@@ -15,15 +14,15 @@ import { ProfileView } from "../components/ProfileView";
 import { ReviewsView } from "../components/ReviewsView";
 import { MapsView } from "../components/MapsView";
 import { CancelOrderModal } from "../components/CancelOrderModal";
-import { DriverRequestModal } from "../components/DriverRequestModal";
 import { AddMenuModal } from "../components/AddMenuModal";
 import { EditMenuModal } from "../components/EditMenuModal";
 import { UpdateStockModal } from "../components/UpdateStockModal";
 import { Plus } from "lucide-react";
 import { useOrders } from "../hooks/useOrders";
-import { useDriverRequests } from "../hooks/useDriverRequests";
 import { useMerchant } from "../hooks/useMerchant";
 import { useMenu } from "../hooks/useMenu";
+import { fetchReviewsByMerchant } from "../services/reviewService";
+import { getMerchantId } from "../lib/supabase";
 
 // Cycle through 3 store statuses
 const NEXT_STATUS: Record<StoreStatus, StoreStatus> = {
@@ -34,12 +33,14 @@ const NEXT_STATUS: Record<StoreStatus, StoreStatus> = {
 
 export default function MerchantApp() {
   const [currentTab, setCurrentTab] = useState<NavTab>("dashboard");
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   const {
     merchant: merchantProfile,
     handleUpdateStoreStatus,
     handleUpdateProfile,
   } = useMerchant();
+
   const {
     menuItems,
     kategoriList,
@@ -49,6 +50,7 @@ export default function MerchantApp() {
     handleUpdateStock,
     handleDeleteMenu,
   } = useMenu();
+
   const [notification, setNotification] = useState<{
     type: "success" | "error";
     message: string;
@@ -70,6 +72,7 @@ export default function MerchantApp() {
       showNotification("Gagal menghapus menu. Silakan coba lagi.", "error");
     }
   };
+
   const {
     activeOrders,
     historyOrders,
@@ -80,9 +83,15 @@ export default function MerchantApp() {
     loadOrders,
   } = useOrders();
 
-  // Driver requests
-  const { currentRequest, acceptRequest, rejectRequest, dismissRequest } =
-    useDriverRequests();
+  const merchantId = getMerchantId();
+
+  useEffect(() => {
+    async function loadReviews() {
+      const realReviews = await fetchReviewsByMerchant(merchantId);
+      setReviews(realReviews);
+    }
+    loadReviews();
+  }, [merchantId]);
 
   // Layout & Modals
   const [isOpenMobileSidebar, setIsOpenMobileSidebar] = useState(false);
@@ -111,7 +120,6 @@ export default function MerchantApp() {
 
   // Status Handlers
   const handleCancelOrderRequest = (orderId: string) => {
-    // Close detail modal first, open cancel modal
     setCancelModalOrderId(orderId);
     setSelectedOrder(null);
   };
@@ -128,16 +136,16 @@ export default function MerchantApp() {
   // Metrics
   const todayCount =
     activeOrders.length +
-    historyOrders.filter((h) => h.status_order === "SELESAI").length;
+    historyOrders.filter((h) => h.status_order === "DELIVERED").length;
   const completedCount = historyOrders.filter(
-    (h) => h.status_order === "SELESAI",
+    (h) => h.status_order === "DELIVERED",
   ).length;
   const inProgressCount = activeOrders.length;
   const cancelledCount = historyOrders.filter(
-    (h) => h.status_order === "BATAL",
+    (h) => h.status_order === "CANCELLED_BY_MERCHANT" || h.status_order === "CANCELLED_BY_USER",
   ).length;
   const totalRevenue = historyOrders
-    .filter((h) => h.status_order === "SELESAI")
+    .filter((h) => h.status_order === "DELIVERED")
     .reduce((sum, o) => sum + o.total_harga, 0);
 
   return (
@@ -157,76 +165,75 @@ export default function MerchantApp() {
         }
       />
 
-      {/* Main Wrapper - Offset by desktop sidebar width */}
+      {/* Main Container */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ${
-          isCollapsedDesktopSidebar ? "lg:pl-20" : "lg:pl-64"
+          isCollapsedDesktopSidebar ? "lg:ml-20" : "lg:ml-64"
         }`}
       >
-        {/* Top Header Navbar */}
+        {/* Header Component */}
         <Header
+          merchantProfile={merchantProfile}
           currentTab={currentTab}
           onSelectTab={setCurrentTab}
-          onOpenMobileSidebar={() => setIsOpenMobileSidebar(true)}
-          merchantProfile={merchantProfile}
-          unreadCount={notifications.length}
           notifications={notifications}
+          onOpenMobileSidebar={() => setIsOpenMobileSidebar(true)}
+          onToggleStoreStatus={handleToggleStoreStatusWrapper}
         />
+
+        {/* Dynamic Notification Toast */}
         {notification && (
-          <div className="fixed top-6 right-6 z-50 w-[320px] rounded-3xl border px-4 py-3 shadow-2xl backdrop-blur-xl transition-opacity duration-200">
-            <div
-              className={`flex items-start gap-3 rounded-3xl p-3 text-sm font-medium ${
-                notification.type === "success"
-                  ? "bg-emerald-50 border border-emerald-200 text-emerald-900"
-                  : "bg-rose-50 border border-rose-200 text-rose-900"
-              }`}
-            >
-              <div className="flex-1">
-                <p className="font-semibold">
-                  {notification.type === "success" ? "Berhasil" : "Gagal"}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed">
-                  {notification.message}
-                </p>
-              </div>
-            </div>
+          <div
+            className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg border text-xs font-bold transition-all animate-in fade-in slide-in-from-top-2 ${
+              notification.type === "success"
+                ? "bg-[#F1DEC4] border-[#e0ceb5] text-[#BD4444]"
+                : "bg-rose-50 border-rose-200 text-rose-700"
+            }`}
+          >
+            {notification.message}
           </div>
         )}
 
-        {/* Main Workspace Body */}
-        <main className="flex-1 pt-6 pb-16 px-4 md:px-8 max-w-[90rem] w-full mx-auto">
+        {/* Body Content */}
+        <main className="p-4 sm:p-6 lg:p-8 flex-grow space-y-6 max-w-[1600px] w-full mx-auto">
+          {/* TAB: Dashboard */}
           {currentTab === "dashboard" && (
-            <div className="flex flex-col lg:flex-row gap-6">
-              {/* Left Column (70%) */}
-              <div className="flex-1 lg:w-[70%] space-y-6">
-                {/* 5 Stat Cards */}
-                <StatCardsRow
-                  todayCount={todayCount}
-                  completedCount={completedCount}
-                  inProgressCount={inProgressCount}
-                  cancelledCount={cancelledCount}
-                  totalRevenue={totalRevenue}
-                />
+            <>
+              {/* Stat Cards */}
+              <StatCardsRow
+                todayCount={todayCount}
+                completedCount={completedCount}
+                inProgressCount={inProgressCount}
+                cancelledCount={cancelledCount}
+                totalRevenue={totalRevenue}
+              />
 
-                {/* Active Orders Card */}
-                <ActiveOrdersCard
-                  orders={activeOrders}
+              {/* Main Content Area: Active Orders & Revenue Chart */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Left Area (70%): Active Orders & Revenue */}
+                <div className="w-full lg:w-[70%] space-y-6">
+                  <ActiveOrdersCard
+                    merchantProfile={merchantProfile}
+                    orders={activeOrders}
+                    onSelectOrder={setSelectedOrder}
+                    onUpdateStatus={handleUpdateOrderStatus}
+                    onCancelOrder={handleCancelOrderRequest}
+                    onViewAll={() => setCurrentTab("orders")}
+                  />
+                  <RevenueChart />
+                </div>
+
+                {/* Right Area (30%): Order History Sidebar */}
+                <OrderHistorySidebar
+                  historyOrders={historyOrders}
                   onSelectOrder={setSelectedOrder}
-                  onUpdateStatus={handleUpdateOrderStatus}
-                  onCancelOrder={handleCancelOrderRequest}
-                  onViewAll={() => setCurrentTab("orders")}
+                  onViewAllHistory={() => setCurrentTab("orders")}
                 />
               </div>
-
-              {/* Right Order History Sidebar (30%) */}
-              <OrderHistorySidebar
-                historyOrders={historyOrders}
-                onSelectOrder={setSelectedOrder}
-                onViewAllHistory={() => setCurrentTab("orders")}
-              />
-            </div>
+            </>
           )}
 
+          {/* TAB: Orders List */}
           {currentTab === "orders" && (
             <OrdersListView
               orders={[...activeOrders, ...historyOrders]}
@@ -235,79 +242,46 @@ export default function MerchantApp() {
             />
           )}
 
+          {/* TAB: Menu Management */}
           {currentTab === "menu" && (
-            <MenuManagement
-              menuItems={menuItems}
-              onToggleStock={handleToggleAvailability}
-              onOpenAddMenu={() => setIsAddMenuModalOpen(true)}
-              onOpenUpdateStock={(item) => setSelectedMenuItemForStock(item)}
-              onOpenEditMenu={(item) => {
-                setSelectedMenuToEdit(item);
-                setIsEditMenuModalOpen(true);
-              }}
-              onDeleteMenu={handleDeleteMenuWithNotification}
-            />
-          )}
-
-          {currentTab === "reviews" && (
-            <ReviewsView reviews={INITIAL_REVIEWS} />
-          )}
-
-          {currentTab === "reports" && (
-            <div className="space-y-6">
-              {/* Summary Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                  {
-                    label: "Total Pendapatan",
-                    value: `Rp ${new Intl.NumberFormat("id-ID").format(totalRevenue)}`,
-                    color: "text-[#BD4444]",
-                  },
-                  {
-                    label: "Order Selesai",
-                    value: completedCount,
-                    color: "text-blue-700",
-                  },
-                  {
-                    label: "Order Dibatalkan",
-                    value: cancelledCount,
-                    color: "text-rose-700",
-                  },
-                  {
-                    label: "Rata-rata / Order",
-                    value:
-                      completedCount > 0
-                        ? `Rp ${new Intl.NumberFormat("id-ID").format(Math.floor(totalRevenue / completedCount))}`
-                        : "-",
-                    color: "text-violet-700",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)]"
-                  >
-                    <p className="text-xs text-slate-500 font-medium">
-                      {item.label}
-                    </p>
-                    <p className={`text-lg font-extrabold mt-1 ${item.color}`}>
-                      {item.value}
-                    </p>
-                  </div>
-                ))}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200/60 shadow-xs">
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">
+                    Manajemen Menu & Stok
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium">
+                    Atur daftar menu, ketersediaan, dan update stok secara cepat.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAddMenuModalOpen(true)}
+                  className="px-4 py-2 bg-[#BD4444] hover:bg-[#a13838] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Menu</span>
+                </button>
               </div>
-              <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-[0px_4px_12px_rgba(0,0,0,0.05)]">
-                <h2 className="text-xl font-bold text-slate-900 mb-2">
-                  Laporan Analitik Pendapatan
-                </h2>
-                <p className="text-xs text-slate-500 mb-6">
-                  Tinjauan mendalam performa penjualan dan pesanan harian
-                  merchant.
-                </p>
-                <RevenueChart />
-              </div>
+
+              <MenuManagement
+                menuItems={menuItems}
+                kategoriList={kategoriList}
+                onToggleAvailability={handleToggleAvailability}
+                onEditMenu={(menu) => {
+                  setSelectedMenuToEdit(menu);
+                  setIsEditMenuModalOpen(true);
+                }}
+                onUpdateStock={(menu) => {
+                  setSelectedMenuItemForStock(menu);
+                }}
+                onDeleteMenu={(menuId) =>
+                  handleDeleteMenuWithNotification(String(menuId))
+                }
+              />
             </div>
           )}
 
+          {/* TAB: Live Maps Tracking */}
           {currentTab === "maps" && (
             <MapsView
               merchantProfile={merchantProfile}
@@ -315,6 +289,10 @@ export default function MerchantApp() {
             />
           )}
 
+          {/* TAB: Reviews */}
+          {currentTab === "reviews" && <ReviewsView reviews={reviews} />}
+
+          {/* TAB: Profile */}
           {currentTab === "profile" && (
             <ProfileView
               merchantProfile={merchantProfile}
@@ -348,19 +326,6 @@ export default function MerchantApp() {
         isOpen={!!cancelModalOrderId}
         onClose={() => setCancelModalOrderId(null)}
         onConfirm={handleCancelOrderConfirm}
-      />
-
-      <DriverRequestModal
-        request={currentRequest}
-        onAccept={(id) => {
-          acceptRequest(id);
-        }}
-        onReject={(id) => {
-          rejectRequest(id);
-        }}
-        onClose={() =>
-          currentRequest && dismissRequest(currentRequest.request_id)
-        }
       />
 
       <AddMenuModal

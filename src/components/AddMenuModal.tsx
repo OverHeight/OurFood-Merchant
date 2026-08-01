@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MenuItem } from '../types';
 import { UtensilsCrossed, X, PlusCircle, Image as ImageIcon } from 'lucide-react';
+import { uploadMenuImage } from '../services/menuService';
 
 interface AddMenuModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const AddMenuModal: React.FC<AddMenuModalProps> = ({
   const [stok, setStok] = useState('10');
   const [deskripsi, setDeskripsi] = useState('');
   const [image, setImage] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -137,18 +139,47 @@ export const AddMenuModal: React.FC<AddMenuModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">URL Gambar</label>
-              <div className="relative">
-                <ImageIcon className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
-                <input
-                  type="url"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
-                  placeholder="https://..."
-                />
+              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Gambar Menu</label>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploading(true);
+                      const uploadedUrl = await uploadMenuImage(file);
+                      if (uploadedUrl) {
+                        setImage(uploadedUrl);
+                      }
+                      setIsUploading(false);
+                    }}
+                    className="text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#BD4444]/10 file:text-[#BD4444] hover:file:bg-[#BD4444]/20 cursor-pointer"
+                  />
+                  {isUploading && (
+                    <span className="text-xs font-bold text-[#BD4444] animate-pulse">
+                      Mengunggah...
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <ImageIcon className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="url"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-200 focus:border-[#BD4444] outline-none"
+                    placeholder="Atau masukkan URL gambar (https://...)"
+                  />
+                </div>
+                {image && (
+                  <div className="mt-2 relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200">
+                    <img src={image} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">Kosongkan untuk menggunakan gambar bawaan.</p>
             </div>
           </form>
         </div>

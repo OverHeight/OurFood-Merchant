@@ -1,148 +1,230 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { ChefHat, ArrowRight, Store } from 'lucide-react';
+import { ChefHat, ArrowRight, Store, MapPin, CheckCircle, Lock, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { DbMerchant } from '../lib/database.types';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [merchants, setMerchants] = useState<{merchant_id: string, nama_merchant: string}[]>([]);
-  const [selectedMerchant, setSelectedMerchant] = useState('');
+  const [merchants, setMerchants] = useState<DbMerchant[]>([]);
+  const [selectedMerchantId, setSelectedMerchantId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMerchants = async () => {
-      const { data } = await supabase.from('merchant').select('merchant_id, nama_merchant');
-      if (data && data.length > 0) {
+    async function fetchMerchants() {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('merchant')
+        .select('*')
+        .order('nama_merchant');
+
+      if (error) {
+        console.error('Error fetching merchants:', error);
+        setErrorMsg('Gagal memuat daftar restoran dari database.');
+      } else if (data && data.length > 0) {
         setMerchants(data);
-        setSelectedMerchant(data[0].merchant_id);
+        // Check if there is already a saved merchantId in localStorage
+        const savedId = localStorage.getItem('merchantId');
+        if (savedId && data.some((m) => m.merchant_id === savedId)) {
+          setSelectedMerchantId(savedId);
+        } else {
+          setSelectedMerchantId(data[0].merchant_id);
+        }
       }
-    };
+      setIsLoading(false);
+    }
     fetchMerchants();
   }, []);
 
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = (e?: React.FormEvent, merchantIdToLogin?: string) => {
     if (e) e.preventDefault();
-    if (selectedMerchant) {
-      localStorage.setItem('merchantId', selectedMerchant);
-      window.location.href = '/dashboard'; // force reload to update CURRENT_MERCHANT_ID
+    const idToUse = merchantIdToLogin || selectedMerchantId;
+
+    if (!idToUse) {
+      setErrorMsg('Pilih restoran terlebih dahulu.');
+      return;
     }
+
+    // Save merchant ID and authentication flag
+    localStorage.setItem('merchantId', idToUse);
+    localStorage.setItem('isAuthenticated', 'true');
+
+    // Redirect to Dashboard
+    navigate('/dashboard');
   };
 
+  const selectedMerchant = merchants.find((m) => m.merchant_id === selectedMerchantId);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#fcf8f2] via-[#F1DEC4]/30 to-[#fcf8f2] p-4 relative overflow-hidden antialiased">
       {/* Background decoration elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <motion.div 
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 150, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-64 -left-64 w-[500px] h-[500px] rounded-full bg-orange-200/50 blur-3xl mix-blend-multiply"
+          transition={{ duration: 150, repeat: Infinity, ease: 'linear' }}
+          className="absolute -top-64 -left-64 w-[500px] h-[500px] rounded-full bg-[#F1DEC4]/60 blur-3xl mix-blend-multiply"
         />
-        <motion.div 
+        <motion.div
           animate={{ rotate: -360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-64 -right-64 w-[600px] h-[600px] rounded-full bg-red-200/50 blur-3xl mix-blend-multiply"
+          transition={{ duration: 120, repeat: Infinity, ease: 'linear' }}
+          className="absolute -bottom-64 -right-64 w-[600px] h-[600px] rounded-full bg-[#BD4444]/10 blur-3xl mix-blend-multiply"
         />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md"
+        className="relative z-10 w-full max-w-xl"
       >
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/40 p-8">
-          
-          <div className="flex flex-col items-center justify-center text-center mb-10">
-            <motion.div 
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200/80 p-6 sm:p-8">
+          {/* Header Branding */}
+          <div className="flex flex-col items-center justify-center text-center mb-8">
+            <motion.img
+              src="/assets/logo.png"
+              alt="OurFood Logo"
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
-              transition={{ 
-                type: "spring",
+              transition={{
+                type: 'spring',
                 stiffness: 260,
                 damping: 20,
-                delay: 0.1 
+                delay: 0.1,
               }}
-              className="w-20 h-20 bg-gradient-to-tr from-orange-500 to-red-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 mb-6"
-            >
-              <ChefHat className="w-10 h-10 text-white" />
-            </motion.div>
-            
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              OurFood Merchant
+              className="w-20 h-20 object-contain mb-3 drop-shadow-md"
+            />
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              OurFood <span className="text-[#BD4444]">Merchant</span>
             </h1>
-            <p className="text-gray-500 mt-2 font-medium">
-              Kelola restoran Anda dengan mudah
+            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+              Portal Manajemen Restoran & Pesanan Makanan
             </p>
           </div>
 
-          <form className="space-y-4 mb-4" onSubmit={handleLogin}>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Pilih Merchant</label>
-              <select 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-white"
-                value={selectedMerchant}
-                onChange={(e) => setSelectedMerchant(e.target.value)}
-              >
-                {merchants.map((m) => (
-                  <option key={m.merchant_id} value={m.merchant_id}>
-                    {m.nama_merchant}
-                  </option>
-                ))}
-              </select>
+          {errorMsg && (
+            <div className="mb-6 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-bold text-center">
+              {errorMsg}
             </div>
+          )}
+
+          {/* Form / Merchant Selector */}
+          <form className="space-y-5" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Username (opsional)</label>
-              <input 
-                type="text" 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-gray-50/50" 
-                placeholder="Masukkan username"
-              />
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Pilih Restoran Anda
+              </label>
+
+              {isLoading ? (
+                <div className="p-8 text-center text-xs font-medium text-slate-400 border border-dashed border-slate-200 rounded-2xl bg-slate-50">
+                  Memuat daftar restoran dari Supabase...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {/* Select Dropdown */}
+                  <select
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-[#BD4444] focus:ring-2 focus:ring-[#BD4444]/20 outline-none text-sm font-semibold bg-slate-50 text-slate-900 transition-colors"
+                    value={selectedMerchantId}
+                    onChange={(e) => setSelectedMerchantId(e.target.value)}
+                  >
+                    {merchants.map((m) => (
+                      <option key={m.merchant_id} value={m.merchant_id}>
+                        {m.nama_merchant} ({m.status_toko || 'BUKA'})
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Visual Merchant Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto pr-1">
+                    {merchants.map((m) => {
+                      const isSelected = m.merchant_id === selectedMerchantId;
+                      return (
+                        <div
+                          key={m.merchant_id}
+                          onClick={() => setSelectedMerchantId(m.merchant_id)}
+                          className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center gap-3 ${
+                            isSelected
+                              ? 'bg-[#F1DEC4]/40 border-[#BD4444] shadow-xs ring-1 ring-[#BD4444]'
+                              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          <img
+                            src={
+                              m.img_url ||
+                              'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=150&q=80'
+                            }
+                            alt={m.nama_merchant}
+                            className="w-10 h-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-xs font-bold text-slate-900 truncate">
+                                {m.nama_merchant}
+                              </p>
+                              {isSelected && (
+                                <CheckCircle className="w-3.5 h-3.5 text-[#BD4444] shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate">{m.alamat || 'Bandung'}</span>
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password (opsional)</label>
-              <input 
-                type="password" 
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors bg-gray-50/50" 
-                placeholder="Masukkan password"
-              />
-            </div>
+
+            {/* Selected Merchant Confirmation Box */}
+            {selectedMerchant && (
+              <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Store className="w-4 h-4 text-[#BD4444]" />
+                  <span className="text-slate-600 font-medium">Restoran Terpilih:</span>
+                  <span className="font-bold text-slate-900">{selectedMerchant.nama_merchant}</span>
+                </div>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    selectedMerchant.status_toko === 'TUTUP'
+                      ? 'bg-rose-100 text-rose-800'
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  {selectedMerchant.status_toko || 'BUKA'}
+                </span>
+              </div>
+            )}
+
+            {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              disabled={!selectedMerchantId || isLoading}
+              className="w-full bg-[#BD4444] hover:bg-[#a13838] text-white font-bold py-3.5 px-6 rounded-xl shadow-md shadow-[#BD4444]/20 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
-              Login
+              <ShieldCheck className="w-5 h-5" />
+              <span>Masuk ke Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
-          <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-gray-200"></div>
-            <span className="flex-shrink-0 mx-4 text-gray-400 text-sm">atau</span>
-            <div className="flex-grow border-t border-gray-200"></div>
+          {/* Register Link Banner */}
+          <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-600 font-medium">
+              Belum memiliki akun restoran?{' '}
+              <Link to="/register" className="font-bold text-[#BD4444] hover:underline">
+                Daftar Merchant Baru
+              </Link>
+            </p>
           </div>
 
-          <div className="space-y-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleLogin()}
-              type="button"
-              className="w-full relative group overflow-hidden bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 font-semibold py-4 px-6 rounded-2xl shadow-sm transition-all duration-300 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
-                  <Store className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-lg">Login as Guest</span>
-                  <span className="text-xs text-gray-500 font-normal">Akses langsung ke dashboard</span>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
-            </motion.button>
-          </div>
-
-          <div className="mt-8 text-center text-sm text-gray-400">
-            <p>© {new Date().getFullYear()} OurFood. Hak Cipta Dilindungi.</p>
+          {/* Footer Information */}
+          <div className="mt-4 text-center text-[11px] text-slate-400">
+            <p>© {new Date().getFullYear()} OurFood Platform • Database Integrated</p>
           </div>
         </div>
       </motion.div>

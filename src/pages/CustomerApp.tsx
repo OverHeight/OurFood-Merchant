@@ -1,17 +1,44 @@
-import React, { useState } from "react";
-import { INITIAL_MENU_ITEMS } from "../data/mockData";
+import React, { useState, useEffect } from "react";
 import { MenuItem, Order } from "../types";
 import { useOrders } from "../hooks/useOrders";
+import { fetchMenuByMerchant } from "../services/menuService";
+import { getMerchantId } from "../lib/supabase";
 import { ShoppingBag, Minus, Plus, UtensilsCrossed } from "lucide-react";
 
 export default function CustomerApp() {
   const { addOrder } = useOrders();
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(true);
   const [selectedCart, setSelectedCart] = useState<
     { item: MenuItem; quantity: number; notes: string }[]
   >([]);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const merchantId = getMerchantId();
+
+  useEffect(() => {
+    async function loadMenu() {
+      setIsLoadingMenu(true);
+      const dbMenu = await fetchMenuByMerchant(merchantId);
+      const transformed: MenuItem[] = dbMenu.map((dbItem) => ({
+        menu_id: dbItem.menu_id,
+        merchant_id: dbItem.merchant_id,
+        kategori_id: dbItem.kategori_id || undefined,
+        nama_menu: dbItem.nama_menu,
+        harga: dbItem.harga,
+        status_tersedia: dbItem.status_tersedia === "tersedia",
+        image_url: dbItem.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80",
+        category: dbItem.kategori?.nama || "Menu Utama",
+        stok: dbItem.stok ?? 0,
+        description: dbItem.deskripsi || "",
+      }));
+      setMenuItems(transformed);
+      setIsLoadingMenu(false);
+    }
+    loadMenu();
+  }, [merchantId]);
 
   const handleToggleCartItem = (menu: MenuItem) => {
     const existing = selectedCart.find((c) => c.item.menu_id === menu.menu_id);
@@ -52,18 +79,14 @@ export default function CustomerApp() {
     0,
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim() || selectedCart.length === 0) return;
 
     const now = new Date();
-    const timeStr = now.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
     const newOrder: Order = {
-      order_id: `#ORD-${Math.floor(100000000 + Math.random() * 900000000)}`,
+      order_id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
       nama: customerName.trim(),
       no_hp: customerPhone.trim() || undefined,
       items: selectedCart.map((c) => ({
@@ -76,17 +99,15 @@ export default function CustomerApp() {
         notes: c.notes || undefined,
       })),
       total_harga: totalPrice,
-      status_order: "DISIAPKAN",
-      paymentStatus: "BELUM_BAYAR", // as it's from customer directly, wait to pay at cashier
+      status_order: "WAITING_MERCHANT",
+      paymentStatus: "BELUM_BAYAR",
       waktu_checkout: now.toISOString(),
       deliveryType: "Takeaway",
-      alamat_pengantaran: "",
     };
 
-    addOrder(newOrder);
+    await addOrder(newOrder);
     setIsSuccess(true);
 
-    // reset form
     setTimeout(() => {
       setCustomerName("");
       setCustomerPhone("");
@@ -105,9 +126,8 @@ export default function CustomerApp() {
           <h2 className="text-2xl font-bold text-slate-800">
             Pesanan Berhasil!
           </h2>
-          <p className="text-slate-600">
-            Pesanan Anda telah dikirim ke Dapur. Silakan tunggu dan lakukan
-            pembayaran di Kasir.
+          <p className="text-slate-600 text-xs">
+            Pesanan Anda telah dikirim ke Merchant. Silakan tunggu konfirmasi dari restoran.
           </p>
         </div>
       </div>
@@ -117,7 +137,7 @@ export default function CustomerApp() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
       {/* Header */}
-      <div className="bg-white p-4 shadow-sm sticky top-0 z-10 flex items-center gap-3">
+      <div className="bg-white p-4 shadow-xs sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200">
         <div className="w-10 h-10 bg-[#BD4444] rounded-xl flex items-center justify-center text-white">
           <UtensilsCrossed className="w-6 h-6" />
         </div>
@@ -129,8 +149,8 @@ export default function CustomerApp() {
 
       <div className="p-4 max-w-md mx-auto space-y-6 mt-4">
         {/* Customer Data */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-          <h2 className="font-bold text-slate-800">Data Pemesan</h2>
+        <div className="bg-white p-4 rounded-2xl shadow-xs border border-slate-200 space-y-4">
+          <h2 className="font-bold text-slate-800 text-sm">Data Pemesan</h2>
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
               Nama Lengkap <span className="text-rose-500">*</span>
@@ -145,7 +165,7 @@ export default function CustomerApp() {
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-              No Meja / WhatsApp
+              No Meja / Telepon
             </label>
             <input
               type="text"
@@ -159,55 +179,61 @@ export default function CustomerApp() {
 
         {/* Menu Items */}
         <div className="space-y-3">
-          <h2 className="font-bold text-slate-800">Daftar Menu</h2>
-          {INITIAL_MENU_ITEMS.map((m) => {
-            const isSelected = selectedCart.some(
-              (c) => c.item.menu_id === m.menu_id,
-            );
-            return (
-              <div
-                key={m.menu_id}
-                className="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex gap-3"
-              >
-                <img
-                  src={m.image_url}
-                  alt={m.nama_menu}
-                  className="w-20 h-20 rounded-xl object-cover"
-                />
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-sm">{m.nama_menu}</h3>
-                    <p className="text-xs text-slate-500">{m.category}</p>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      Stok: {m.stok ?? 0}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="font-bold text-[#BD4444] text-sm">
-                      Rp {new Intl.NumberFormat("id-ID").format(m.harga)}
-                    </p>
-                    <button
-                      onClick={() => handleToggleCartItem(m)}
-                      disabled={m.stok === 0}
-                      className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors ${
-                        isSelected
-                          ? "bg-rose-100 text-rose-600"
-                          : "bg-emerald-100 text-[#BD4444]"
-                      } ${m.stok === 0 ? "opacity-60 cursor-not-allowed bg-slate-100 text-slate-400" : ""}`}
-                    >
-                      {isSelected ? "Batal" : m.stok === 0 ? "Habis" : "Tambah"}
-                    </button>
+          <h2 className="font-bold text-slate-800 text-sm">Daftar Menu</h2>
+          {isLoadingMenu ? (
+            <p className="text-xs text-slate-400 text-center py-6">Memuat daftar menu...</p>
+          ) : menuItems.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-6">Belum ada menu yang tersedia.</p>
+          ) : (
+            menuItems.map((m) => {
+              const isSelected = selectedCart.some(
+                (c) => c.item.menu_id === m.menu_id,
+              );
+              return (
+                <div
+                  key={m.menu_id}
+                  className="bg-white p-3 rounded-2xl shadow-xs border border-slate-200 flex gap-3"
+                >
+                  <img
+                    src={m.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80"}
+                    alt={m.nama_menu}
+                    className="w-20 h-20 rounded-xl object-cover"
+                  />
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-bold text-sm">{m.nama_menu}</h3>
+                      <p className="text-xs text-slate-500">{m.category}</p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Stok: {m.stok ?? 0}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="font-bold text-[#BD4444] text-sm">
+                        Rp {new Intl.NumberFormat("id-ID").format(m.harga)}
+                      </p>
+                      <button
+                        onClick={() => handleToggleCartItem(m)}
+                        disabled={m.stok === 0 || !m.status_tersedia}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-rose-100 text-rose-600"
+                            : "bg-emerald-100 text-[#BD4444]"
+                        } ${(m.stok === 0 || !m.status_tersedia) ? "opacity-60 cursor-not-allowed bg-slate-100 text-slate-400" : ""}`}
+                      >
+                        {isSelected ? "Batal" : (m.stok === 0 || !m.status_tersedia) ? "Habis" : "Tambah"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
         {/* Cart */}
         {selectedCart.length > 0 && (
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-            <h2 className="font-bold text-slate-800">
+          <div className="bg-white p-4 rounded-2xl shadow-xs border border-slate-200 space-y-4">
+            <h2 className="font-bold text-slate-800 text-sm">
               Keranjang Pesanan ({selectedCart.length})
             </h2>
             {selectedCart.map((c) => (
@@ -223,7 +249,7 @@ export default function CustomerApp() {
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(c.item.menu_id, -1)}
-                      className="p-1 bg-slate-100 text-slate-600 rounded-lg"
+                      className="p-1 bg-slate-100 text-slate-600 rounded-lg cursor-pointer"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
@@ -233,7 +259,7 @@ export default function CustomerApp() {
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(c.item.menu_id, 1)}
-                      className="p-1 bg-slate-100 text-slate-600 rounded-lg"
+                      className="p-1 bg-slate-100 text-slate-600 rounded-lg cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -267,7 +293,7 @@ export default function CustomerApp() {
             <button
               onClick={handleSubmit}
               disabled={!customerName.trim()}
-              className="flex-1 bg-[#BD4444] text-white font-bold py-3 px-4 rounded-xl shadow-lg disabled:opacity-50"
+              className="flex-1 bg-[#BD4444] text-white font-bold py-3 px-4 rounded-xl shadow-lg disabled:opacity-50 cursor-pointer"
             >
               Pesan Sekarang
             </button>

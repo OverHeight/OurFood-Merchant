@@ -89,7 +89,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
         notes: c.notes || undefined,
       })),
       total_harga: totalPrice,
-      status_order: "DISIAPKAN",
+      status_order: "WAITING_MERCHANT",
       paymentStatus,
       waktu_checkout: now.toISOString(),
       alamat_pengantaran: address.trim() || undefined,
@@ -214,7 +214,7 @@ export const NewOrderModal: React.FC<NewOrderModalProps> = ({
                     `}
                     >
                       <img
-                        src={m.image}
+                        src={m.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=100&q=80"}
                         alt={m.nama_menu}
                         className="w-9 h-9 rounded-lg object-cover shrink-0"
                       />
